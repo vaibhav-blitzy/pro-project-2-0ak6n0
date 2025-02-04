@@ -1,0 +1,40 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "paths": {
+      "@config/*": ["config/*"],
+      "@interfaces/*": ["interfaces/*"],
+      "@services/*": ["services/*"],
+      "@controllers/*": ["controllers/*"],
+      "@utils/*": ["utils/*"],
+      "@search/*": ["search/*"],
+      "@elastic/*": ["elastic/*"]
+    },
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "sourceMap": true,
+    "declaration": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.json"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "coverage",
+    "src/**/__mocks__/*"
+  ]
+}
