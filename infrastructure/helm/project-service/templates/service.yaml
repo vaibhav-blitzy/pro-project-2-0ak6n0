@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  labels:
+    {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.service.labels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.service.labels "context" $ ) | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.service.annotations }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.service.annotations "context" $ ) | nindent 4 }}
+    {{- end }}
+    # Prometheus monitoring annotations
+    prometheus.io/scrape: "true"
+    prometheus.io/port: {{ .Values.service.port | quote }}
+    prometheus.io/path: "/metrics"
+spec:
+  type: {{ .Values.service.type }}
+  # Define ports for HTTP and WebSocket traffic
+  ports:
+    # Main HTTP port for REST API traffic
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+    # WebSocket port for real-time updates
+    - name: websocket
+      port: 8083
+      targetPort: websocket
+      protocol: TCP
+  # Pod selector using common labels
+  selector:
+    {{- include "common.labels.matchLabels" . | nindent 4 }}
+  # Session affinity for WebSocket connections
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hour timeout
