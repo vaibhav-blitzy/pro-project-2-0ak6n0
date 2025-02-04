@@ -1,0 +1,168 @@
+// =============================================================================
+// Material Design 3.0 Theme Implementation
+// Author: Task Management System
+// Version: 1.0.0
+// =============================================================================
+
+@use 'variables' as vars;
+@use 'mixins' as mix;
+
+// Theme Constants
+// -----------------------------------------------------------------------------
+$THEME_TRANSITION: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+$THEME_DATA_ATTRIBUTE: '[data-theme]';
+$COLOR_SCHEME_QUERY: '(prefers-color-scheme: dark)';
+
+// Theme Functions
+// -----------------------------------------------------------------------------
+@function generateThemeVariant($theme-name, $color-palette) {
+  $theme-selector: if($theme-name == 'auto', ':root', '[data-theme="#{$theme-name}"]');
+  
+  #{$theme-selector} {
+    // Primary color scale with surface tint
+    --md-sys-color-primary: #{map-get($color-palette, 'primary', 'main')};
+    --md-sys-color-on-primary: #{map-get($color-palette, 'primary', 'contrast')};
+    --md-sys-color-primary-container: #{map-get($color-palette, 'primary', 'light')};
+    --md-sys-color-on-primary-container: #{map-get($color-palette, 'primary', 'dark')};
+    
+    // Surface colors with tint overlays
+    --md-sys-color-surface: #{map-get($color-palette, 'surface', $theme-name)};
+    --md-sys-color-surface-tint: #{rgba(map-get($color-palette, 'primary', 'main'), 0.05)};
+    --md-sys-color-on-surface: #{map-get($color-palette, 'text', if($theme-name == 'light', 'primary', 'primary-dark'))};
+    
+    // State layer opacities
+    --md-state-hover-opacity: 0.08;
+    --md-state-focus-opacity: 0.12;
+    --md-state-pressed-opacity: 0.16;
+    --md-state-dragged-opacity: 0.16;
+    
+    // Elevation shadows
+    --md-elevation-level-1: #{map-get(vars.$elevation, 'low')};
+    --md-elevation-level-2: #{map-get(vars.$elevation, 'medium')};
+    --md-elevation-level-3: #{map-get(vars.$elevation, 'high')};
+    
+    // Semantic color roles
+    --md-sys-color-error: #{map-get($color-palette, 'error', 'main')};
+    --md-sys-color-on-error: #{map-get($color-palette, 'error', 'contrast')};
+    --md-sys-color-warning: #{map-get($color-palette, 'warning', 'main')};
+    --md-sys-color-success: #{map-get($color-palette, 'success', 'main')};
+  }
+}
+
+@function validateColorContrast($foreground, $background) {
+  // Convert colors to relative luminance
+  $luminance1: calculateRelativeLuminance($foreground);
+  $luminance2: calculateRelativeLuminance($background);
+  
+  // Calculate contrast ratio
+  $ratio: ($luminance1 + 0.05) / ($luminance2 + 0.05);
+  
+  // Ensure ratio meets WCAG 2.1 Level AA (4.5:1)
+  @return $ratio >= vars.$MINIMUM_CONTRAST_RATIO;
+}
+
+// Theme Root Configuration
+// -----------------------------------------------------------------------------
+:root {
+  color-scheme: light dark;
+  --theme-transition: #{$THEME_TRANSITION};
+  
+  // Base typography
+  font-family: map-get(vars.$typography, 'font-family');
+  font-size: map-get(map-get(vars.$typography, 'font-sizes'), 'base');
+  line-height: map-get(map-get(vars.$typography, 'line-heights'), 'base');
+  
+  // Smooth theme transitions
+  * {
+    transition: var(--theme-transition);
+  }
+  
+  // Reduced motion preferences
+  @media (prefers-reduced-motion: reduce) {
+    --theme-transition: none;
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+// Light Theme Implementation
+// -----------------------------------------------------------------------------
+.theme-light {
+  @include generateThemeVariant('light', vars.$colors);
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  
+  // High contrast mode support
+  @media (forced-colors: active) {
+    --md-sys-color-primary: CanvasText;
+    --md-sys-color-on-primary: Canvas;
+    --md-sys-color-surface: Canvas;
+    --md-sys-color-on-surface: CanvasText;
+  }
+}
+
+// Dark Theme Implementation
+// -----------------------------------------------------------------------------
+.theme-dark {
+  @include generateThemeVariant('dark', vars.$colors);
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  
+  // Adjust elevation shadows for dark theme
+  --md-elevation-level-1: #{map-get(vars.$elevation, 'low')};
+  --md-elevation-level-2: #{map-get(vars.$elevation, 'medium')};
+  --md-elevation-level-3: #{map-get(vars.$elevation, 'high')};
+  
+  // High contrast mode support
+  @media (forced-colors: active) {
+    --md-sys-color-primary: CanvasText;
+    --md-sys-color-on-primary: Canvas;
+    --md-sys-color-surface: Canvas;
+    --md-sys-color-on-surface: CanvasText;
+  }
+}
+
+// System Theme Detection
+// -----------------------------------------------------------------------------
+@media #{$COLOR_SCHEME_QUERY} {
+  :root[data-theme='auto'] {
+    @include generateThemeVariant('dark', vars.$colors);
+  }
+}
+
+// Accessibility Enhancements
+// -----------------------------------------------------------------------------
+@media (prefers-contrast: more) {
+  :root {
+    --md-sys-color-primary: #{darken(map-get(map-get(vars.$colors, 'primary'), 'main'), 10%)};
+    --md-state-hover-opacity: 0.16;
+    --md-state-focus-opacity: 0.24;
+    --md-state-pressed-opacity: 0.32;
+  }
+}
+
+// RTL Support
+// -----------------------------------------------------------------------------
+[dir='rtl'] {
+  @include mix.rtlAware('text-align', left, right);
+}
+
+// Focus Visible Implementation
+// -----------------------------------------------------------------------------
+:focus-visible {
+  @include mix.focusRing(var(--md-sys-color-primary));
+  outline-offset: 2px;
+}
+
+// Export Theme Variables
+// -----------------------------------------------------------------------------
+:export {
+  --md-sys-color-primary: var(--md-sys-color-primary);
+  --md-sys-color-on-primary: var(--md-sys-color-on-primary);
+  --md-sys-color-surface-tint: var(--md-sys-color-surface-tint);
+  --md-elevation-level: var(--md-elevation-level-1);
+}
