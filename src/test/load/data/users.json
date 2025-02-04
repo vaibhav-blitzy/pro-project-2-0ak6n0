@@ -1,0 +1,74 @@
+{
+  "adminUsers": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "email": "admin.user1@taskmanager.test",
+      "password": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKxcQBjDOZT.Zky",
+      "firstName": "AdminUser1",
+      "lastName": "LoadTest20240101",
+      "role": "ADMIN",
+      "mfaEnabled": true,
+      "mfaSecret": "JBSWY3DPEHPK3PXP",
+      "lastLogin": "2024-01-06T15:30:00.000Z",
+      "createdAt": "2023-12-15T10:00:00.000Z",
+      "updatedAt": "2024-01-06T15:30:00.000Z"
+    }
+  ],
+  "managerUsers": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "email": "manager.user1@taskmanager.test",
+      "password": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKxcQBjDOZT.Zky",
+      "firstName": "ManagerUser1",
+      "lastName": "LoadTest20240101",
+      "role": "MANAGER",
+      "mfaEnabled": true,
+      "mfaSecret": "KRSXG5CTMVRXEZLU",
+      "lastLogin": "2024-01-06T14:20:00.000Z",
+      "createdAt": "2023-12-16T09:00:00.000Z",
+      "updatedAt": "2024-01-06T14:20:00.000Z"
+    }
+  ],
+  "memberUsers": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "email": "member.user1@taskmanager.test",
+      "password": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKxcQBjDOZT.Zky",
+      "firstName": "MemberUser1",
+      "lastName": "LoadTest20240101",
+      "role": "MEMBER",
+      "mfaEnabled": false,
+      "mfaSecret": "",
+      "lastLogin": "2024-01-06T12:00:00.000Z",
+      "createdAt": "2023-12-17T08:00:00.000Z",
+      "updatedAt": "2024-01-06T12:00:00.000Z"
+    }
+  ],
+  "mfaUsers": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "email": "mfa.user1@taskmanager.test",
+      "password": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKxcQBjDOZT.Zky",
+      "firstName": "MFAUser1",
+      "lastName": "LoadTest20240101",
+      "role": "MEMBER",
+      "mfaEnabled": true,
+      "mfaSecret": "NZSXQ3RNMJQXIZLS",
+      "lastLogin": "2024-01-06T13:45:00.000Z",
+      "createdAt": "2023-12-18T11:00:00.000Z",
+      "updatedAt": "2024-01-06T13:45:00.000Z"
+    }
+  ],
+  "_metadata": {
+    "totalUsers": 1000,
+    "distribution": {
+      "admin": 10,
+      "manager": 90,
+      "member": 900,
+      "mfaEnabled": 100
+    },
+    "generatedAt": "2024-01-07T00:00:00.000Z",
+    "version": "1.0.0",
+    "passwordHash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKxcQBjDOZT.Zky"
+  }
+}
