@@ -1,0 +1,44 @@
+apiVersion: v2
+name: task-service
+description: A Helm chart for the Task Service microservice in the Task Management System, providing task management functionality with high availability and performance optimization
+type: application
+version: 1.0.0
+appVersion: 1.0.0
+
+# Keywords for chart discovery and categorization
+keywords:
+  - task-management
+  - microservice
+  - spring-boot
+  - java
+  - high-availability
+  - kubernetes
+
+# Chart maintainers
+maintainers:
+  - name: Task Management Team
+    email: team@taskmanagement.com
+
+# Chart dependencies
+dependencies:
+  # Common library charts for shared resources
+  - name: common
+    version: 1.0.0
+    repository: file://../common
+    condition: common.enabled
+
+  # Redis dependency for caching
+  - name: redis
+    version: 17.0.0
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+
+# Helm version requirements
+engine:
+  helm: ">=3.0.0"
+
+# Additional metadata annotations
+annotations:
+  artifacthub.io/changes: "Initial release of Task Service chart"
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/license: "MIT"
