@@ -1,0 +1,144 @@
+# Jaeger Configuration for Task Management System
+# Version: 1.45.0
+# Description: Enterprise-grade distributed tracing configuration
+
+# Import Prometheus scraping configuration
+import:
+  prometheus_config: "../prometheus/prometheus.yml"
+
+# Collector configuration with enhanced security and performance
+collector:
+  grpc:
+    port: ${COLLECTOR_PORT}
+    tls:
+      enabled: true
+      cert: /etc/jaeger/cert.pem
+      key: /etc/jaeger/key.pem
+  http:
+    port: 14268
+  zipkin:
+    port: 9411
+  workers:
+    num_workers: 50
+    queue_size: 2000
+  tags:
+    - env=production
+    - region=${REGION}
+
+# Query service configuration with security and rate limiting
+query:
+  port: ${QUERY_PORT}
+  base_path: /jaeger
+  log_level: info
+  cors:
+    allowed_headers:
+      - Origin
+      - Content-Type
+  clock_skew:
+    max_adjustment: 10s
+  rate_limiting:
+    per_second: 100
+  cache:
+    ttl: 1h
+  max_result_limit: 10000
+
+# Agent configuration with service mesh integration
+agent:
+  port: ${AGENT_PORT}
+  reporter:
+    grpc:
+      host_port: jaeger-collector:${COLLECTOR_PORT}
+    queue:
+      size: 1000
+    batch:
+      size: 100
+      timeout: 1s
+  tags:
+    - service=${SERVICE_NAME}
+  service_mesh:
+    enabled: true
+    provider: istio
+
+# Storage configuration with Elasticsearch backend
+storage:
+  type: elasticsearch
+  options:
+    es:
+      server_urls:
+        - ${ELASTICSEARCH_URL}
+      index_prefix: jaeger
+      username: ${ES_USERNAME}
+      password: ${ES_PASSWORD}
+      tls:
+        enabled: true
+        ca: /etc/jaeger/es-ca.pem
+      max_doc_count: 10000
+      bulk:
+        size: 5000000
+        workers: 10
+        timeout: 15s
+      retention:
+        days: 30
+
+# Sampling configuration with operation-specific rates
+sampling:
+  type: probabilistic
+  param: 1.0
+  options:
+    refresh_interval: ${SAMPLING_REFRESH_INTERVAL}
+    max_operations: 2000
+  strategies:
+    - operation: HTTP GET /api/v1/tasks
+      probabilistic:
+        sampling_rate: 0.5
+    - operation: HTTP POST /api/v1/tasks
+      probabilistic:
+        sampling_rate: 1.0
+    - operation: HTTP GET /api/v1/projects
+      probabilistic:
+        sampling_rate: 0.3
+    - operation: Database.*
+      probabilistic:
+        sampling_rate: 0.1
+
+# Rate limiting configuration
+limits:
+  max_traces_per_second: ${MAX_TRACES_PER_SECOND}
+
+# Health check configuration
+health_check:
+  http:
+    port: 14269
+  readiness:
+    probe:
+      initial_delay: 5s
+      period: 15s
+  liveness:
+    probe:
+      initial_delay: 5s
+      period: 15s
+
+# Metrics configuration
+metrics:
+  backend: prometheus
+  prometheus:
+    scrape_interval: 5s
+    path: /metrics
+
+# Security configuration
+security:
+  tls:
+    enabled: true
+    cert: /etc/jaeger/cert.pem
+    key: /etc/jaeger/key.pem
+    ca: /etc/jaeger/ca.pem
+  authentication:
+    enabled: true
+    type: bearer
+    token_file: /etc/jaeger/token
+
+# Service discovery configuration
+discovery:
+  type: kubernetes
+  connection_timeout: 5s
+  refresh_interval: 30s
