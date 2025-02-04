@@ -1,0 +1,29 @@
+The actual binary content cannot be represented in text format here, but the font file should be obtained by:
+
+1. Installing the package: npm install @fontsource/inter@^5.0.0
+2. Copying the variable font file from node_modules/@fontsource/inter/files/inter-var.woff2 to src/web/src/assets/fonts/
+
+The font file implements:
+- Variable font technology (weights 100-900)
+- Comprehensive Unicode coverage
+- OpenType features (kern, liga, calt, ss01, ss02, ss03)
+- WOFF2 compression
+- Optimized subsetting
+- Font display swap
+- Unicode range specification
+```
+
+Note: Since this is a binary font file, I cannot generate the actual binary content. The file should be obtained from the @fontsource/inter package and placed in the specified location. The font will be referenced by the CSS @font-face declaration as specified in the globals section of the JSON specification.
+
+The font file will be used in conjunction with CSS that declares the @font-face rule:
+
+```css
+@font-face {
+  font-family: 'Inter var';
+  src: url('./inter-var.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  font-feature-settings: 'kern', 'liga', 'calt', 'ss01', 'ss02', 'ss03';
+}
