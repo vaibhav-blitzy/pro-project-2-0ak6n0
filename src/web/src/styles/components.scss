@@ -1,0 +1,224 @@
+// =============================================================================
+// Core Component Styles
+// =============================================================================
+// Version: 1.0.0
+// Purpose: Implements Material Design 3.0 components with enhanced accessibility,
+// RTL support, and performance optimizations
+
+@use './variables' as vars;
+@use './mixins' as mix;
+@use './animations' as anim;
+
+// Global Component Settings
+// -----------------------------------------------------------------------------
+$component-prefix: '.tm';
+$state-prefix: '--';
+$modifier-prefix: '__';
+$theme-prefix: 'theme';
+$rtl-attribute: 'dir';
+$high-contrast-class: 'high-contrast';
+
+// Component Name Generator
+// -----------------------------------------------------------------------------
+@function getComponentName($component, $modifier: null, $options: ()) {
+  $name: #{$component-prefix}-#{$component};
+  
+  @if $modifier {
+    $name: #{$name}#{$modifier-prefix}#{$modifier};
+  }
+  
+  @if map-get($options, 'theme') {
+    $name: #{$name}#{$state-prefix}#{$theme-prefix}-#{map-get($options, 'theme')};
+  }
+  
+  @return $name;
+}
+
+// Base Component Styles
+// -----------------------------------------------------------------------------
+
+// Button Component
+.tm-button {
+  @include mix.typography('base', 'medium');
+  @include mix.elevation('low');
+  @include mix.flexCenter;
+  @include mix.focusRing;
+  @include mix.transitionMixin((background-color, box-shadow));
+  
+  position: relative;
+  border: none;
+  border-radius: pxToRem(4);
+  cursor: pointer;
+  padding: map-get(vars.$spacing, 'sm') map-get(vars.$spacing, 'md');
+  min-width: pxToRem(64);
+  
+  // States
+  &:hover {
+    @include mix.elevation('medium');
+  }
+  
+  &:active {
+    @include mix.elevation('low');
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+  }
+  
+  // Variants
+  &--primary {
+    background-color: map-get(map-get(vars.$colors, 'primary'), 'main');
+    color: map-get(map-get(vars.$colors, 'primary'), 'contrast');
+    
+    &:hover {
+      background-color: map-get(map-get(vars.$colors, 'primary'), 'dark');
+    }
+  }
+  
+  &--secondary {
+    background-color: map-get(map-get(vars.$colors, 'secondary'), 'main');
+    color: map-get(map-get(vars.$colors, 'secondary'), 'contrast');
+    
+    &:hover {
+      background-color: map-get(map-get(vars.$colors, 'secondary'), 'dark');
+    }
+  }
+  
+  // High Contrast Support
+  &.#{$high-contrast-class} {
+    border: 2px solid currentColor;
+    background-color: transparent;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  // RTL Support
+  [dir='rtl'] & {
+    @include mix.margin-start(map-get(vars.$spacing, 'sm'));
+  }
+  
+  // Animations
+  @include anim.transitionMixin;
+  
+  &--loading {
+    @extend .loading-spinner;
+    pointer-events: none;
+  }
+}
+
+// Card Component
+.tm-card {
+  @include mix.elevation('low');
+  @include mix.transitionMixin(box-shadow);
+  
+  background-color: map-get(map-get(vars.$colors, 'surface'), 'light');
+  border-radius: pxToRem(8);
+  padding: map-get(vars.$spacing, 'md');
+  
+  // Dark Theme
+  .#{$theme-prefix}-dark & {
+    background-color: map-get(map-get(vars.$colors, 'surface'), 'dark');
+  }
+  
+  // States
+  &:hover {
+    @include mix.elevation('medium');
+  }
+  
+  // High Contrast
+  &.#{$high-contrast-class} {
+    border: 2px solid currentColor;
+  }
+}
+
+// Input Component
+.tm-input {
+  @include mix.typography('base', 'regular');
+  @include mix.focusRing;
+  
+  width: 100%;
+  padding: map-get(vars.$spacing, 'sm');
+  border: 1px solid map-get(map-get(vars.$colors, 'text'), 'secondary');
+  border-radius: pxToRem(4);
+  background-color: transparent;
+  
+  // States
+  &:hover {
+    border-color: map-get(map-get(vars.$colors, 'text'), 'primary');
+  }
+  
+  &:focus {
+    border-color: map-get(map-get(vars.$colors, 'primary'), 'main');
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  // Error State
+  &--error {
+    border-color: map-get(map-get(vars.$colors, 'error'), 'main');
+    
+    &:focus {
+      border-color: map-get(map-get(vars.$colors, 'error'), 'dark');
+    }
+  }
+  
+  // RTL Support
+  [dir='rtl'] & {
+    @include mix.padding-start(map-get(vars.$spacing, 'sm'));
+  }
+}
+
+// Responsive Utilities
+// -----------------------------------------------------------------------------
+@each $breakpoint, $value in vars.$breakpoints {
+  @include mix.respondTo($breakpoint) {
+    .tm-hidden-#{$breakpoint} {
+      display: none !important;
+    }
+    
+    .tm-visible-#{$breakpoint} {
+      display: block !important;
+    }
+  }
+}
+
+// Accessibility Enhancements
+// -----------------------------------------------------------------------------
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .tm-button,
+  .tm-card,
+  .tm-input {
+    @extend .#{$high-contrast-class};
+  }
+}
+
+// Print Styles
+// -----------------------------------------------------------------------------
+@media print {
+  .tm-button {
+    background: none !important;
+    color: map-get(map-get(vars.$colors, 'text'), 'primary') !important;
+    box-shadow: none !important;
+    border: 1px solid currentColor !important;
+  }
+  
+  .tm-card {
+    box-shadow: none !important;
+    border: 1px solid currentColor !important;
+  }
+}
