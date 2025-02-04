@@ -1,0 +1,203 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    branches: 
+      - main
+      - develop
+      - 'release/*'
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  NODE_VERSION: '18.x'
+  JAVA_VERSION: '17'
+  NODE_ENV: 'test'
+  TEST_COVERAGE_THRESHOLD: '80'
+  PERFORMANCE_THRESHOLD_API: '500'
+  PERFORMANCE_THRESHOLD_PAGE: '2000'
+
+jobs:
+  lint:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.m2/repository
+            node_modules
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/package-lock.json', '**/pom.xml') }}
+
+      - name: Run Super-Linter
+        uses: github/super-linter@v5
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: main
+          VALIDATE_TYPESCRIPT: true
+          VALIDATE_JAVASCRIPT: true
+          VALIDATE_JAVA: true
+          VALIDATE_YAML: true
+          VALIDATE_JSON: true
+          VALIDATE_SQL: true
+
+      - name: Run SonarCloud Analysis
+        uses: sonarcloud/sonarcloud-github-action@v2
+        with:
+          args: >
+            -Dsonar.organization=task-management-system
+            -Dsonar.projectKey=task-management-system
+            -Dsonar.sources=src
+            -Dsonar.tests=src
+            -Dsonar.test.inclusions=**/*.spec.ts,**/*.test.ts,**/*.test.java
+            -Dsonar.coverage.exclusions=**/*.test.ts,**/*.spec.ts,**/*.test.java
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.java.coveragePlugin=jacoco
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+
+  test:
+    name: Tests and Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          cd src/web && npm ci
+          cd ../backend && npm ci
+
+      - name: Run Backend Tests
+        run: |
+          cd src/backend
+          npm run test:coverage -- --coverageThreshold.global.lines=$TEST_COVERAGE_THRESHOLD
+          cd task-service
+          mvn test jacoco:report
+
+      - name: Run Frontend Tests
+        run: |
+          cd src/web
+          npm run test:coverage -- --coverageThreshold.global.lines=$TEST_COVERAGE_THRESHOLD
+
+      - name: Run Integration Tests
+        run: |
+          cd src/backend
+          npm run test:integration
+
+      - name: Run E2E Tests
+        run: |
+          cd src/web
+          npm run test:e2e
+
+  security:
+    name: Security Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Snyk Security Scan
+        uses: snyk/actions@v3
+        with:
+          args: --severity-threshold=high
+
+      - name: Run OWASP Dependency Check
+        run: |
+          cd src/backend
+          mvn org.owasp:dependency-check-maven:check
+
+      - name: Run Container Security Scan
+        uses: aquasecurity/trivy-action@v1
+        with:
+          scan-type: 'fs,config'
+          ignore-unfixed: true
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Security Results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: trivy-results.sarif
+
+  performance:
+    name: Performance Validation
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup k6
+        uses: k6-io/action@v1
+
+      - name: Run API Performance Tests
+        run: |
+          k6 run tests/performance/api-tests.js \
+            --vus 10 \
+            --duration 30s \
+            --threshold "http_req_duration<$PERFORMANCE_THRESHOLD_API"
+
+      - name: Run Frontend Performance Tests
+        run: |
+          cd src/web
+          npm run build
+          npx lighthouse-ci \
+            --performance=$PERFORMANCE_THRESHOLD_PAGE \
+            --preset=desktop
+
+      - name: Generate Performance Report
+        run: |
+          mkdir -p reports/performance
+          cp k6-summary.json reports/performance/
+          cp lighthouse-results.json reports/performance/
+
+      - name: Upload Performance Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results
+          path: reports/performance/
