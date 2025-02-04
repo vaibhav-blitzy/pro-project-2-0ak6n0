@@ -1,0 +1,28 @@
+apiVersion: v2
+name: auth-service
+description: Authentication service for the Task Management System
+version: 1.0.0
+appVersion: "1.0.0"
+type: application
+
+keywords:
+  - authentication
+  - oauth2
+  - jwt
+  - mfa
+
+maintainers:
+  - name: Task Management Team
+    email: team@taskmanager.com
+
+# Redis dependency version 17.x.x from Bitnami
+dependencies:
+  - name: redis
+    version: "17.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+
+annotations:
+  artifacthub.io/changes: "Initial release of auth-service chart"
+  artifacthub.io/containsSecurityUpdates: "true"
+  artifacthub.io/license: "MIT"
