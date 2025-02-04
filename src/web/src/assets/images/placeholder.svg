@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 240 240" 
+    width="100%" 
+    height="100%" 
+    preserveAspectRatio="xMidYMid meet" 
+    role="img" 
+    aria-label="Placeholder image" 
+    focusable="false"
+    style="contain: strict"
+>
+    <!-- Background rectangle -->
+    <rect 
+        width="100%" 
+        height="100%" 
+        fill="#F5F5F5"
+    />
+
+    <!-- Placeholder icon - simplified geometric shapes -->
+    <g 
+        fill="#9E9E9E" 
+        transform="translate(72, 72)"
+    >
+        <!-- Mountain-like shape representing image -->
+        <path 
+            d="M0 72 L24 36 L48 54 L72 18 L96 72 Z" 
+            fill-rule="evenodd"
+        />
+        
+        <!-- Sun/circle element -->
+        <circle 
+            cx="76" 
+            cy="28" 
+            r="12"
+        />
+    </g>
+
+    <!-- Optional decorative grid pattern for visual interest -->
+    <pattern 
+        id="grid" 
+        width="16" 
+        height="16" 
+        patternUnits="userSpaceOnUse"
+        opacity="0.1"
+    >
+        <path 
+            d="M0 16 L16 16 M16 0 L16 16" 
+            stroke="#9E9E9E" 
+            stroke-width="0.5" 
+            fill="none"
+        />
+    </pattern>
+    <rect 
+        width="100%" 
+        height="100%" 
+        fill="url(#grid)"
+    />
+</svg>
