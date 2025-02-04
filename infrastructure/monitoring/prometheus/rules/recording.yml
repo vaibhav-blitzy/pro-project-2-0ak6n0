@@ -1,0 +1,135 @@
+# Prometheus Recording Rules Configuration
+# Version: 2.45.0
+# Evaluation Interval: 5m
+# Retention Period: 30d
+
+groups:
+  # Service-level metrics for request rates, latency, and error rates
+  - name: service_metrics
+    interval: 5m
+    rules:
+      # Request rate by service, status, and endpoint
+      - record: taskmanager:service:request_rate:5m
+        expr: sum(rate(http_requests_total[5m])) by (job, status, endpoint)
+        labels:
+          metric_type: request_rate
+          retention: 30d
+
+      # 95th percentile latency by service
+      - record: taskmanager:service:latency_percentiles:5m
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (job, le))
+        labels:
+          metric_type: latency
+          percentile: p95
+          retention: 30d
+
+      # Error rate by service and endpoint
+      - record: taskmanager:service:error_rate:5m
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (job, endpoint) / sum(rate(http_requests_total[5m])) by (job, endpoint)
+        labels:
+          metric_type: error_rate
+          retention: 30d
+
+  # Resource utilization metrics
+  - name: resource_usage
+    interval: 5m
+    rules:
+      # Memory utilization percentage
+      - record: taskmanager:service:memory_utilization_percent:5m
+        expr: (process_resident_memory_bytes / machine_memory_bytes) * 100
+        labels:
+          metric_type: memory_util
+          retention: 30d
+
+      # Disk I/O utilization
+      - record: taskmanager:service:disk_io_utilization:5m
+        expr: rate(node_disk_io_time_seconds_total[5m]) * 100
+        labels:
+          metric_type: disk_util
+          retention: 30d
+
+      # CPU utilization by service
+      - record: taskmanager:service:cpu_utilization:5m
+        expr: sum(rate(process_cpu_seconds_total[5m])) by (job) * 100
+        labels:
+          metric_type: cpu_util
+          retention: 30d
+
+  # Security and compliance metrics
+  - name: security_metrics
+    interval: 5m
+    rules:
+      # Authentication failure rate
+      - record: taskmanager:security:auth_failures:5m
+        expr: sum(rate(auth_failures_total[5m])) by (job, reason)
+        labels:
+          metric_type: security
+          category: authentication
+          retention: 30d
+
+      # Rate of suspicious requests (potential security threats)
+      - record: taskmanager:security:suspicious_requests:5m
+        expr: sum(rate(http_requests_total{status=~"4.."}[5m])) by (job, status)
+        labels:
+          metric_type: security
+          category: suspicious_activity
+          retention: 30d
+
+  # Application-specific metrics
+  - name: application_metrics
+    interval: 5m
+    rules:
+      # Task creation rate
+      - record: taskmanager:app:task_creation_rate:5m
+        expr: sum(rate(task_creation_total[5m])) by (project)
+        labels:
+          metric_type: business
+          category: tasks
+          retention: 30d
+
+      # Project activity level
+      - record: taskmanager:app:project_activity:5m
+        expr: sum(rate(project_updates_total[5m])) by (project_id)
+        labels:
+          metric_type: business
+          category: projects
+          retention: 30d
+
+  # SLA compliance metrics
+  - name: sla_metrics
+    interval: 5m
+    rules:
+      # API endpoint SLA compliance
+      - record: taskmanager:sla:compliance_rate:5m
+        expr: sum(rate(http_request_duration_seconds_count{duration_seconds<0.5}[5m])) by (endpoint) / sum(rate(http_request_duration_seconds_count[5m])) by (endpoint)
+        labels:
+          metric_type: sla
+          threshold: 500ms
+          retention: 30d
+
+      # Service availability
+      - record: taskmanager:sla:availability:5m
+        expr: avg_over_time(up[5m])
+        labels:
+          metric_type: sla
+          category: availability
+          retention: 30d
+
+  # Cache performance metrics
+  - name: cache_metrics
+    interval: 5m
+    rules:
+      # Cache hit rate
+      - record: taskmanager:cache:hit_rate:5m
+        expr: sum(rate(cache_hits_total[5m])) / sum(rate(cache_requests_total[5m]))
+        labels:
+          metric_type: cache
+          retention: 30d
+
+      # Cache latency
+      - record: taskmanager:cache:latency:5m
+        expr: histogram_quantile(0.95, sum(rate(cache_operation_duration_seconds_bucket[5m])) by (operation, le))
+        labels:
+          metric_type: cache
+          percentile: p95
+          retention: 30d
