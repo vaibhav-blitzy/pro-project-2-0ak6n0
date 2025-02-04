@@ -1,0 +1,303 @@
+{
+  "metadata": {
+    "locale": "en",
+    "version": "1.0.0",
+    "direction": "ltr",
+    "lastUpdated": "2024-01-01"
+  },
+  "formats": {
+    "date": {
+      "short": "MM/DD/YYYY",
+      "medium": "MMM D, YYYY",
+      "long": "MMMM D, YYYY",
+      "time": "h:mm A",
+      "datetime": "MMM D, YYYY h:mm A"
+    },
+    "number": {
+      "decimal": "0,0.00",
+      "percentage": "0%",
+      "currency": "$0,0.00"
+    }
+  },
+  "aria": {
+    "navigation": {
+      "menu": "Main navigation menu",
+      "search": "Search input",
+      "notifications": "Notifications panel",
+      "userMenu": "User menu",
+      "sidebar": "Sidebar navigation",
+      "breadcrumbs": "Breadcrumb navigation"
+    },
+    "actions": {
+      "close": "Close dialog",
+      "expand": "Expand panel",
+      "collapse": "Collapse panel",
+      "delete": "Delete item",
+      "edit": "Edit item",
+      "save": "Save changes",
+      "upload": "Upload file",
+      "download": "Download file",
+      "search": "Search",
+      "filter": "Filter results",
+      "sort": "Sort results",
+      "refresh": "Refresh data"
+    },
+    "status": {
+      "loading": "Content is loading",
+      "error": "Error occurred",
+      "success": "Action completed successfully",
+      "required": "Required field"
+    }
+  },
+  "common": {
+    "buttons": {
+      "submit": "Submit",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "edit": "Edit",
+      "close": "Close",
+      "back": "Back",
+      "next": "Next",
+      "create": "Create",
+      "update": "Update",
+      "filter": "Filter",
+      "search": "Search",
+      "clear": "Clear",
+      "upload": "Upload",
+      "download": "Download",
+      "refresh": "Refresh",
+      "apply": "Apply",
+      "confirm": "Confirm"
+    },
+    "labels": {
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "description": "Description",
+      "status": "Status",
+      "priority": "Priority",
+      "dueDate": "Due Date",
+      "assignee": "Assignee",
+      "created": "Created",
+      "updated": "Updated",
+      "title": "Title",
+      "category": "Category",
+      "tags": "Tags",
+      "type": "Type",
+      "size": "Size",
+      "progress": "Progress",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "lastModified": "Last Modified"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "completed": "Completed",
+      "failed": "Failed",
+      "inProgress": "In Progress",
+      "onHold": "On Hold",
+      "cancelled": "Cancelled",
+      "archived": "Archived"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical",
+      "urgent": "Urgent"
+    },
+    "validation": {
+      "required": "This field is required",
+      "invalidEmail": "Please enter a valid email address",
+      "minLength": "Must be at least {{count}} characters",
+      "maxLength": "Must be no more than {{count}} characters",
+      "passwordMatch": "Passwords must match",
+      "invalidDate": "Please enter a valid date",
+      "invalidNumber": "Please enter a valid number",
+      "invalidFormat": "Invalid format",
+      "uniqueValue": "This value must be unique",
+      "futureDate": "Date must be in the future",
+      "fileSize": "File size must be less than {{size}}",
+      "fileType": "Invalid file type"
+    },
+    "loading": {
+      "default": "Loading...",
+      "data": "Loading data...",
+      "submission": "Submitting...",
+      "processing": "Processing...",
+      "saving": "Saving...",
+      "deleting": "Deleting...",
+      "uploading": "Uploading...",
+      "downloading": "Downloading..."
+    },
+    "empty": {
+      "default": "No items to display",
+      "tasks": "No tasks found",
+      "projects": "No projects found",
+      "search": "No results found",
+      "notifications": "No notifications",
+      "comments": "No comments yet",
+      "attachments": "No attachments",
+      "activities": "No recent activities"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "subtitle": "Welcome back",
+      "emailLabel": "Email Address",
+      "passwordLabel": "Password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "submitButton": "Sign In",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Get started with your account",
+      "nameLabel": "Full Name",
+      "emailLabel": "Email Address",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "termsAccept": "I accept the terms and conditions",
+      "submitButton": "Create Account",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "forgotPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email to reset your password",
+      "emailLabel": "Email Address",
+      "submitButton": "Send Reset Link",
+      "backToLogin": "Back to login"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {{name}}",
+    "summary": {
+      "totalTasks": "Total Tasks",
+      "completedTasks": "Completed Tasks",
+      "pendingTasks": "Pending Tasks",
+      "overdueTasks": "Overdue Tasks"
+    },
+    "charts": {
+      "taskStatus": "Task Status Distribution",
+      "taskPriority": "Task Priority Distribution",
+      "projectProgress": "Project Progress",
+      "teamPerformance": "Team Performance"
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "noActivity": "No recent activity"
+    }
+  },
+  "tasks": {
+    "title": "Tasks",
+    "create": {
+      "title": "Create Task",
+      "success": "Task created successfully"
+    },
+    "edit": {
+      "title": "Edit Task",
+      "success": "Task updated successfully"
+    },
+    "delete": {
+      "title": "Delete Task",
+      "confirmation": "Are you sure you want to delete this task?",
+      "success": "Task deleted successfully"
+    },
+    "filters": {
+      "all": "All Tasks",
+      "assigned": "Assigned to Me",
+      "created": "Created by Me",
+      "completed": "Completed",
+      "overdue": "Overdue"
+    }
+  },
+  "projects": {
+    "title": "Projects",
+    "create": {
+      "title": "Create Project",
+      "success": "Project created successfully"
+    },
+    "edit": {
+      "title": "Edit Project",
+      "success": "Project updated successfully"
+    },
+    "delete": {
+      "title": "Delete Project",
+      "confirmation": "Are you sure you want to delete this project?",
+      "success": "Project deleted successfully"
+    },
+    "members": {
+      "title": "Team Members",
+      "add": "Add Member",
+      "remove": "Remove Member"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markRead": "Mark as read",
+    "markAllRead": "Mark all as read",
+    "clear": "Clear all",
+    "types": {
+      "task": "Task Update",
+      "project": "Project Update",
+      "mention": "Mention",
+      "system": "System Update"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": {
+      "title": "Profile Settings",
+      "personalInfo": "Personal Information",
+      "changePassword": "Change Password",
+      "preferences": "Preferences"
+    },
+    "notifications": {
+      "title": "Notification Settings",
+      "email": "Email Notifications",
+      "push": "Push Notifications",
+      "inApp": "In-App Notifications"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "theme": "Theme",
+      "language": "Language",
+      "timezone": "Timezone"
+    }
+  },
+  "errors": {
+    "general": {
+      "title": "Error",
+      "message": "An error occurred. Please try again.",
+      "retry": "Retry",
+      "contact": "Contact support"
+    },
+    "network": {
+      "offline": "No internet connection",
+      "timeout": "Request timed out",
+      "serverError": "Server error occurred"
+    },
+    "auth": {
+      "invalidCredentials": "Invalid email or password",
+      "sessionExpired": "Session expired, please login again",
+      "unauthorized": "Unauthorized access",
+      "accountLocked": "Account locked"
+    },
+    "validation": {
+      "title": "Validation Error",
+      "message": "Please check the form for errors"
+    },
+    "notFound": {
+      "title": "Not Found",
+      "message": "The requested resource was not found"
+    }
+  }
+}
