@@ -1,0 +1,219 @@
+// =============================================================================
+// Core Design System Mixins
+// =============================================================================
+
+@use 'variables' as vars;
+
+// Functions
+// -----------------------------------------------------------------------------
+@function pxToRem($pixels) {
+  @if type-of($pixels) != "number" or $pixels < 0 {
+    @error "pxToRem() expects a positive number, got #{$pixels}";
+  }
+  @return #{$pixels / 16}rem;
+}
+
+@function getBreakpoint($name) {
+  @if not map-has-key(vars.$breakpoints, $name) {
+    @error "Breakpoint #{$name} not found in $breakpoints map";
+  }
+  @return map-get(vars.$breakpoints, $name);
+}
+
+@function getElevation($level, $state: 'default') {
+  $elevation-map: vars.$elevation;
+  @if not map-has-key($elevation-map, $level) {
+    @error "Elevation level #{$level} not found in $elevation map";
+  }
+  @return map-get($elevation-map, $level);
+}
+
+// Layout Mixins
+// -----------------------------------------------------------------------------
+@mixin flexCenter($direction: row) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: $direction;
+}
+
+@mixin gridLayout($columns: vars.$GRID_COLUMNS, $gap: vars.$BASE_SPACING_UNIT) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: pxToRem($gap);
+}
+
+@mixin container($max-width: vars.$MAX_CONTENT_WIDTH) {
+  width: 100%;
+  max-width: $max-width;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: pxToRem(vars.$BASE_SPACING_UNIT * 2);
+  padding-right: pxToRem(vars.$BASE_SPACING_UNIT * 2);
+}
+
+// Responsive Design
+// -----------------------------------------------------------------------------
+@mixin respondTo($breakpoint) {
+  $value: getBreakpoint($breakpoint);
+  @media screen and (min-width: $value) {
+    @content;
+  }
+}
+
+@mixin aspectRatio($width: 16, $height: 9) {
+  position: relative;
+  &::before {
+    content: '';
+    display: block;
+    padding-top: ($height / $width) * 100%;
+  }
+}
+
+// Material Design Elevation
+// -----------------------------------------------------------------------------
+@mixin elevation($level, $state: 'default') {
+  $shadow: getElevation($level);
+  box-shadow: #{$shadow};
+  transition: box-shadow map-get(map-get(vars.$animation, 'duration'), 'base') 
+              map-get(map-get(vars.$animation, 'easing'), 'standard');
+
+  @if $state == 'hover' {
+    &:hover {
+      box-shadow: getElevation('high');
+    }
+  }
+}
+
+// Animation Patterns
+// -----------------------------------------------------------------------------
+@mixin animate($name, $duration: 'base', $easing: 'standard') {
+  $duration-value: map-get(map-get(vars.$animation, 'duration'), $duration);
+  $easing-value: map-get(map-get(vars.$animation, 'easing'), $easing);
+  
+  animation: #{$name} #{$duration-value} #{$easing-value};
+}
+
+@mixin fadeIn {
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+@mixin slideIn($direction: 'left') {
+  @keyframes slideIn {
+    from {
+      @if $direction == 'left' {
+        transform: translateX(-100%);
+      } @else if $direction == 'right' {
+        transform: translateX(100%);
+      } @else if $direction == 'top' {
+        transform: translateY(-100%);
+      } @else if $direction == 'bottom' {
+        transform: translateY(100%);
+      }
+      opacity: 0;
+    }
+    to {
+      transform: translate(0);
+      opacity: 1;
+    }
+  }
+}
+
+// RTL Support
+// -----------------------------------------------------------------------------
+@mixin rtlAware($property, $ltr-value, $rtl-value) {
+  #{$property}: $ltr-value;
+
+  [dir='rtl'] & {
+    #{$property}: $rtl-value;
+  }
+}
+
+@mixin margin-start($value) {
+  margin-left: $value;
+
+  [dir='rtl'] & {
+    margin-left: 0;
+    margin-right: $value;
+  }
+}
+
+@mixin padding-start($value) {
+  padding-left: $value;
+
+  [dir='rtl'] & {
+    padding-left: 0;
+    padding-right: $value;
+  }
+}
+
+// Accessibility
+// -----------------------------------------------------------------------------
+@mixin focusRing($color: map-get(map-get(vars.$colors, 'primary'), 'main')) {
+  &:focus-visible {
+    outline: 2px solid $color;
+    outline-offset: 2px;
+  }
+}
+
+@mixin visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Typography
+// -----------------------------------------------------------------------------
+@mixin typography($size: 'base', $weight: 'regular', $line-height: 'base') {
+  font-size: map-get(map-get(vars.$typography, 'font-sizes'), $size);
+  font-weight: map-get(map-get(vars.$typography, 'font-weights'), $weight);
+  line-height: map-get(map-get(vars.$typography, 'line-heights'), $line-height);
+}
+
+@mixin truncate($lines: 1) {
+  @if $lines == 1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// Material Design States
+// -----------------------------------------------------------------------------
+@mixin ripple($color: 'primary') {
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(map-get(map-get(vars.$colors, $color), 'main'), 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease-out, height 0.3s ease-out;
+  }
+
+  &:active::after {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+}
