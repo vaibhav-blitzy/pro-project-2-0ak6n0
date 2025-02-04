@@ -1,0 +1,89 @@
+# Spring Boot Application Configuration v3.0.0
+# Spring Cloud Configuration v4.0.0
+
+spring:
+  application:
+    name: project-service  # Service identifier for discovery and monitoring
+  
+  # Database Configuration
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/taskmanager_projects}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000  # 5 minutes
+      connection-timeout: 20000  # 20 seconds
+      max-lifetime: 1200000  # 20 minutes
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Ensures schema matches entities
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 50  # Optimized batch operations
+          fetch_size: 100  # Optimized fetch size
+    show-sql: false  # Disabled for production
+  
+  # Cache Configuration
+  cache:
+    type: redis
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000  # Connection timeout in milliseconds
+      ttl: 3600  # Cache TTL in seconds
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8082}
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain
+    min-response-size: 1024
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 10
+    max-connections: 10000
+    accept-count: 100
+
+# Monitoring and Management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus,info
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: project-service
+  health:
+    probes:
+      enabled: true
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
+# WebSocket Configuration
+websocket:
+  endpoint: /ws-projects
+  broker:
+    relay:
+      host: ${RABBITMQ_HOST:localhost}
+      port: ${RABBITMQ_PORT:61613}
+      username: ${RABBITMQ_USER:guest}
+      password: ${RABBITMQ_PASSWORD:guest}
+  destinations:
+    prefix: /topic/projects
+    user-registry: /user/queue/projects
