@@ -1,0 +1,140 @@
+# Helm values configuration for Task Management System Search Service
+# Version: 1.0.0
+# Elasticsearch Version: 8.0.0
+
+# Number of pod replicas for the search service
+replicaCount: 3
+
+# Container image configuration
+image:
+  repository: search-service
+  tag: 8.0.0
+  pullPolicy: IfNotPresent
+
+# Elasticsearch cluster configuration
+elasticsearch:
+  hosts:
+    - elasticsearch-master:9200
+  maxRetries: 3
+  requestTimeout: 30000
+  ssl:
+    enabled: true
+    verifySSL: true
+  indices:
+    numberOfShards: 5
+    numberOfReplicas: 2
+    refreshInterval: "1s"
+  cluster:
+    name: search-cluster
+    routing:
+      allocation:
+        diskThresholdEnabled: true
+        diskThreshold: 85
+
+# Resource requirements optimized for performance benchmarks
+# Configured to handle search response times: Simple <200ms, Complex <500ms
+resources:
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+  requests:
+    cpu: "1"
+    memory: "2Gi"
+
+# Horizontal Pod Autoscaling configuration
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+
+# Monitoring and health check configuration
+monitoring:
+  prometheus:
+    enabled: true
+    path: /metrics
+    port: 8080
+  healthCheck:
+    livenessProbe:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      initialDelaySeconds: 15
+      periodSeconds: 5
+      timeoutSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 9200
+  targetPort: 9200
+
+# Network policies
+networkPolicy:
+  enabled: true
+  ingressRules:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: task-management
+              component: api
+  egressRules:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: elasticsearch
+
+# Pod disruption budget for high availability
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Pod security context
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+# Pod affinity rules for high availability
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - search-service
+          topologyKey: kubernetes.io/hostname
+
+# Node selector for deployment targeting
+nodeSelector:
+  kubernetes.io/role: worker
+
+# Tolerations for node scheduling
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "search"
+    effect: "NoSchedule"
