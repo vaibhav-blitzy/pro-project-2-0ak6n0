@@ -1,0 +1,146 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-kong
+  labels:
+    app: {{ .Release.Name }}-kong
+    component: api-gateway
+    version: {{ .Values.image.tag }}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8001"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-kong
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-kong
+        component: api-gateway
+        version: {{ .Values.image.tag }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8001"
+        prometheus.io/path: "/metrics"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: {{ .Release.Name }}-kong
+              topologyKey: kubernetes.io/hostname
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+      - name: kong
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - ALL
+        ports:
+        - name: proxy
+          containerPort: 8000
+          protocol: TCP
+        - name: proxy-ssl
+          containerPort: 8443
+          protocol: TCP
+        - name: admin
+          containerPort: 8001
+          protocol: TCP
+        - name: admin-ssl
+          containerPort: 8444
+          protocol: TCP
+        - name: metrics
+          containerPort: 8001
+          protocol: TCP
+        env:
+        - name: KONG_DATABASE
+          value: "off"
+        - name: KONG_DECLARATIVE_CONFIG
+          value: "/kong/declarative/kong.yaml"
+        - name: KONG_PROXY_LISTEN
+          value: "0.0.0.0:8000, 0.0.0.0:8443 ssl"
+        - name: KONG_ADMIN_LISTEN
+          value: "0.0.0.0:8001, 0.0.0.0:8444 ssl"
+        - name: KONG_PROXY_ACCESS_LOG
+          value: "/dev/stdout"
+        - name: KONG_ADMIN_ACCESS_LOG
+          value: "/dev/stdout"
+        - name: KONG_PROXY_ERROR_LOG
+          value: "/dev/stderr"
+        - name: KONG_ADMIN_ERROR_LOG
+          value: "/dev/stderr"
+        - name: KONG_PLUGINS
+          value: "bundled,rate-limiting,jwt,cors,ip-restriction,prometheus"
+        resources:
+          requests:
+            cpu: {{ .Values.deployment.resources.requests.cpu }}
+            memory: {{ .Values.deployment.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.deployment.resources.limits.cpu }}
+            memory: {{ .Values.deployment.resources.limits.memory }}
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: admin
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: admin
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /status
+            port: admin
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 30
+        volumeMounts:
+        - name: kong-config
+          mountPath: /kong/declarative
+          readOnly: true
+        - name: kong-tmp
+          mountPath: /tmp
+        - name: kong-certs
+          mountPath: /kong/certs
+          readOnly: true
+      volumes:
+      - name: kong-config
+        configMap:
+          name: {{ .Release.Name }}-kong-config
+      - name: kong-tmp
+        emptyDir: {}
+      - name: kong-certs
+        secret:
+          secretName: {{ .Release.Name }}-kong-certs
+      terminationGracePeriodSeconds: 60
+      serviceAccountName: {{ .Release.Name }}-kong
