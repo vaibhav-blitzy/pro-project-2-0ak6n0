@@ -1,0 +1,166 @@
+{
+  "taskTemplates": [
+    {
+      "template_name": "high_priority_task",
+      "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "title": "High Priority Task Template",
+        "description": "Template for testing high priority task creation",
+        "projectId": "a67e8400-e29b-41d4-a716-446655440123",
+        "priority": "HIGH",
+        "status": "TODO",
+        "dueDate": "2024-03-01T00:00:00.000Z",
+        "customFields": {
+          "complexity": "high",
+          "estimatedHours": 8,
+          "department": "engineering",
+          "requiredSkills": ["java", "spring", "kubernetes"],
+          "dependencies": ["database-setup", "api-gateway"],
+          "reviewers": 3
+        }
+      }
+    },
+    {
+      "template_name": "deadline_driven_task",
+      "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440001",
+        "title": "Deadline-Driven Task Template",
+        "description": "Template for testing deadline-sensitive tasks",
+        "projectId": "a67e8400-e29b-41d4-a716-446655440124",
+        "priority": "HIGH",
+        "status": "TODO",
+        "dueDate": "2024-02-15T00:00:00.000Z",
+        "customFields": {
+          "complexity": "medium",
+          "estimatedHours": 6,
+          "department": "marketing",
+          "reminderFrequency": "daily",
+          "escalationThreshold": "2days"
+        }
+      }
+    },
+    {
+      "template_name": "multi_assignee_task",
+      "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440002",
+        "title": "Multi-Assignee Task Template",
+        "description": "Template for testing tasks with multiple assignees",
+        "projectId": "a67e8400-e29b-41d4-a716-446655440125",
+        "priority": "MEDIUM",
+        "status": "TODO",
+        "dueDate": "2024-03-15T00:00:00.000Z",
+        "customFields": {
+          "complexity": "high",
+          "estimatedHours": 12,
+          "department": "cross-functional",
+          "assignees": ["dev-lead", "qa-lead", "product-owner"],
+          "approvalThreshold": 2,
+          "reviewCycle": "sequential"
+        }
+      }
+    }
+  ],
+  "validationRules": {
+    "schema": {
+      "type": "object",
+      "required": ["title", "description", "projectId", "priority", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z0-9\\s\\-_]+$"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 4000
+        },
+        "projectId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "assigneeId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["HIGH", "MEDIUM", "LOW"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["TODO", "IN_PROGRESS", "REVIEW", "DONE"]
+        },
+        "dueDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "customFields": {
+          "type": "object",
+          "required": ["complexity", "estimatedHours", "department"],
+          "properties": {
+            "complexity": {
+              "type": "string",
+              "enum": ["high", "medium", "low"]
+            },
+            "estimatedHours": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "department": {
+              "type": "string",
+              "pattern": "^[a-zA-Z\\-]+$"
+            },
+            "requiredSkills": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "dependencies": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "reviewers": {
+              "type": "number",
+              "minimum": 1
+            },
+            "reminderFrequency": {
+              "type": "string"
+            },
+            "escalationThreshold": {
+              "type": "string"
+            },
+            "assignees": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "approvalThreshold": {
+              "type": "number",
+              "minimum": 1
+            },
+            "reviewCycle": {
+              "type": "string",
+              "enum": ["sequential", "parallel"]
+            }
+          }
+        }
+      }
+    },
+    "statusTransitions": {
+      "TODO": ["IN_PROGRESS"],
+      "IN_PROGRESS": ["REVIEW", "TODO"],
+      "REVIEW": ["DONE", "IN_PROGRESS"],
+      "DONE": ["TODO"]
+    }
+  }
+}
