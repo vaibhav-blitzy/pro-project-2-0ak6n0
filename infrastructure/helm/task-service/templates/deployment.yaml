@@ -1,0 +1,128 @@
+# helm v3.0.0
+# kubernetes v1.24.0
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "task-service.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{ include "task-service.labels" . }}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/actuator/prometheus"
+    prometheus.io/port: "8083"
+spec:
+  # Configure horizontal scaling with initial 3 replicas
+  replicas: {{ .Values.replicaCount | default 3 }}
+  selector:
+    matchLabels: {{ include "task-service.selectorLabels" . }}
+  
+  # Configure zero-downtime rolling updates
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  
+  template:
+    metadata:
+      labels: {{ include "task-service.selectorLabels" . }}
+      annotations:
+        # Trigger pod restart when config changes
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    
+    spec:
+      # Security context for enhanced container security
+      serviceAccountName: {{ include "task-service.serviceAccountName" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+      
+      containers:
+        - name: task-service
+          image: "{{ .Values.image.repository }}/task-service:{{ .Values.image.tag | default "latest" }}"
+          imagePullPolicy: IfNotPresent
+          
+          # Configure container ports
+          ports:
+            - name: http
+              containerPort: {{ .Values.containerPort | default 8083 }}
+              protocol: TCP
+          
+          # Environment configuration
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.springProfile | default "production" }}
+            - name: JAVA_OPTS
+              value: >-
+                -Xms2g
+                -Xmx4g
+                -XX:+UseG1GC
+                -XX:+HeapDumpOnOutOfMemoryError
+                -XX:MaxGCPauseMillis=200
+                -XX:+UseStringDeduplication
+                -Dserver.port={{ .Values.containerPort | default 8083 }}
+          
+          # Resource limits and requests
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu | default "2" }}
+              memory: {{ .Values.resources.requests.memory | default "4Gi" }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | default "2" }}
+              memory: {{ .Values.resources.limits.memory | default "4Gi" }}
+          
+          # Health check probes
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 30
+          
+          # Volume mounts
+          volumeMounts:
+            - name: task-data
+              mountPath: /app/data
+            - name: tmp-data
+              mountPath: /tmp
+      
+      # Configure volumes
+      volumes:
+        - name: task-data
+          persistentVolumeClaim:
+            claimName: {{ include "task-service.fullname" . }}-pvc
+        - name: tmp-data
+          emptyDir: {}
+      
+      # Pod anti-affinity for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels: {{ include "task-service.selectorLabels" . }}
+                topologyKey: "kubernetes.io/hostname"
+      
+      # Pod termination grace period
+      terminationGracePeriodSeconds: 60
