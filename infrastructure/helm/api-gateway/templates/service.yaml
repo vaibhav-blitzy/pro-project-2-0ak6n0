@@ -1,0 +1,95 @@
+# Kong API Gateway Service Template
+# Version: 3.4.1
+# Provides highly available proxy and admin endpoints with enhanced security and monitoring
+
+{{/* Proxy Service */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-kong-proxy
+  labels:
+    app: {{ .Release.Name }}-kong
+    component: api-gateway
+    version: {{ .Chart.Version }}
+    environment: {{ .Values.environment }}
+  annotations:
+    # Prometheus monitoring integration
+    prometheus.io/scrape: "{{ .Values.monitoring.enabled }}"
+    prometheus.io/port: "{{ .Values.monitoring.port }}"
+    
+    # AWS Load Balancer configurations for high availability
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "60"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+    
+    # Security annotations
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "{{ .Values.kong.proxy.tls.certificateArn }}"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-negotiation-policy: "ELBSecurityPolicy-TLS-1-2-2017-01"
+spec:
+  type: {{ .Values.kong.proxy.type }}
+  # Enable session affinity for consistent routing
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hour timeout for session stickiness
+  ports:
+    # HTTP proxy port
+    - name: proxy
+      port: {{ .Values.kong.proxy.http.port }}
+      targetPort: 8000
+      protocol: TCP
+    # HTTPS proxy port
+    - name: proxy-ssl
+      port: {{ .Values.kong.proxy.tls.port }}
+      targetPort: 8443
+      protocol: TCP
+    # Metrics port for monitoring
+    - name: metrics
+      port: {{ .Values.monitoring.port }}
+      targetPort: {{ .Values.monitoring.targetPort }}
+      protocol: TCP
+  selector:
+    app: {{ .Release.Name }}-kong
+  # Optimize for performance and reliability
+  externalTrafficPolicy: Local
+  # Health check configuration
+  healthCheckNodePort: {{ .Values.kong.proxy.healthCheck.port }}
+  publishNotReadyAddresses: false
+
+---
+{{/* Admin Service - Internal access only */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-kong-admin
+  labels:
+    app: {{ .Release.Name }}-kong
+    component: api-gateway-admin
+    version: {{ .Chart.Version }}
+    environment: {{ .Values.environment }}
+  annotations:
+    # Prometheus monitoring for admin interface
+    prometheus.io/scrape: "{{ .Values.monitoring.enabled }}"
+    prometheus.io/port: "{{ .Values.monitoring.adminPort }}"
+    
+    # Security annotations for internal service
+    service.beta.kubernetes.io/internal-traffic-only: "true"
+spec:
+  type: {{ .Values.kong.admin.type }}
+  ports:
+    # Admin HTTP port
+    - name: admin
+      port: {{ .Values.kong.admin.http.port }}
+      targetPort: 8001
+      protocol: TCP
+    # Admin HTTPS port
+    - name: admin-ssl
+      port: {{ .Values.kong.admin.tls.port }}
+      targetPort: 8444
+      protocol: TCP
+  selector:
+    app: {{ .Release.Name }}-kong
+  # Internal traffic optimization
+  publishNotReadyAddresses: false
