@@ -1,0 +1,44 @@
+apiVersion: v2
+name: notification-service
+description: Enterprise-grade notification microservice for the Task Management System providing real-time notifications via WebSocket, email delivery, and message queue integration with high availability, monitoring, and security features
+type: application
+version: 1.0.0
+appVersion: 1.0.0
+
+# Keywords for better discoverability
+keywords:
+  - notifications
+  - websockets
+  - email
+  - real-time
+  - task-management
+  - high-availability
+  - enterprise
+  - monitoring
+
+# Maintainer information
+maintainers:
+  - name: Task Management System Team
+    email: team@taskmanagement.com
+
+# Dependencies
+dependencies:
+  - name: metrics-server
+    version: 3.8.0
+    repository: https://kubernetes-sigs.github.io/metrics-server/
+    condition: metrics-server.enabled
+    tags:
+      - monitoring
+      - metrics
+      - scaling
+
+# Helm and Kubernetes version requirements
+engine: ">=3.12.0"
+kubeVersion: ">=1.24.0"
+
+# Additional metadata
+annotations:
+  artifacthub.io/changes: "Initial production release"
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/license: "Apache-2.0"
+  artifacthub.io/containsSecurityUpdates: "true"
