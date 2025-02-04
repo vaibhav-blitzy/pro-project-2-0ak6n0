@@ -1,0 +1,34 @@
+apiVersion: v2
+name: project-service
+description: Helm chart for Project Service microservice in the Task Management System
+type: application
+version: 1.0.0
+appVersion: 1.0.0
+
+# Keywords for chart discovery and categorization
+keywords:
+  - project-service
+  - microservice
+  - task-management
+
+# Project home and source repository
+home: https://github.com/taskmanager/project-service
+sources:
+  - https://github.com/taskmanager/project-service
+
+# Chart maintainers
+maintainers:
+  - name: Task Management Team
+    email: team@taskmanager.com
+
+# Chart dependencies
+dependencies:
+  - name: common
+    version: ^2.0.0
+    repository: https://charts.bitnami.com/bitnami
+
+# Template engine
+engine: gotpl
+
+# Kubernetes version requirement
+kubeVersion: ">=1.24.0-0"
