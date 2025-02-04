@@ -1,0 +1,39 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  namespace: cert-manager
+  annotations:
+    # Retry configuration for certificate issuance
+    cert-manager.io/retry-duration: "1h"
+    # Enable monitoring alerts for certificate issues
+    monitoring.taskmanagement.com/alert: "true"
+    # Include in backup strategy
+    backup.taskmanagement.com/include: "true"
+
+spec:
+  acme:
+    # Production Let's Encrypt server URL
+    server: https://acme-v02.api.letsencrypt.org/directory
+    # Email for important notifications about certificates
+    email: security-alerts@taskmanagement.com
+    # Reference to private key secret for ACME account
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    # Configure HTTP-01 challenge solver
+    solvers:
+    - http01:
+        ingress:
+          # Use Kong ingress controller
+          class: kong
+          # Pod template configuration for challenge solver
+          podTemplate:
+            spec:
+              # Ensure pods run on ingress-ready nodes
+              nodeSelector:
+                ingress-ready: "true"
+              # Allow scheduling on ingress nodes
+              tolerations:
+              - key: ingress-node
+                operator: Exists
+                effect: NoSchedule
