@@ -1,0 +1,188 @@
+name: Release Management
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Semantic version number'
+        required: true
+        type: string
+        pattern: '^v\d+\.\d+\.\d+$'
+      force:
+        description: 'Force release deployment'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+  VERSION: ${{ github.ref_name }}
+  RELEASE_CHECKSUM: ${{ github.sha }}
+  DEPLOYMENT_ENVIRONMENT: production
+  NODE_ENV: production
+  RELEASE_ENV: production
+  CANARY_PERCENTAGE: '10'
+  HEALTH_CHECK_INTERVAL: '30s'
+  ERROR_RATE_THRESHOLD: '0.001'
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-release:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      release_status: ${{ steps.validate.outputs.status }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Validate Version Format
+        id: validate
+        run: |
+          if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version format. Must match v*.*.* (e.g., v1.0.0)"
+            exit 1
+          fi
+          echo "status=valid" >> $GITHUB_OUTPUT
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Verify Security Scan Results
+        run: |
+          if [ -f "security-report/high-severity.txt" ]; then
+            echo "High severity security issues found"
+            exit 1
+          fi
+
+      - name: Generate Release Documentation
+        run: |
+          echo "# Release $VERSION" > RELEASE_NOTES.md
+          echo "## Changes" >> RELEASE_NOTES.md
+          git log --pretty=format:"* %s" $(git describe --tags --abbrev=0)..HEAD >> RELEASE_NOTES.md
+          echo "## Security Validation" >> RELEASE_NOTES.md
+          echo "* Security scan completed: $(date)" >> RELEASE_NOTES.md
+
+  publish-artifacts:
+    name: Publish Release Artifacts
+    needs: prepare-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure Docker
+        uses: docker/setup-buildx-action@v4
+        with:
+          buildkitd-flags: --debug
+
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Images
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}/api-gateway:${{ env.VERSION }}
+            ${{ env.DOCKER_REGISTRY }}/task-service:${{ env.VERSION }}
+            ${{ env.DOCKER_REGISTRY }}/auth-service:${{ env.VERSION }}
+          cache-from: type=registry,ref=${{ env.DOCKER_REGISTRY }}/build-cache
+          cache-to: type=registry,ref=${{ env.DOCKER_REGISTRY }}/build-cache,mode=max
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: Release ${{ env.VERSION }}
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist
+          asset_name: release-${{ env.VERSION }}.zip
+          asset_content_type: application/zip
+
+  deploy-production:
+    name: Deploy to Production
+    needs: [prepare-release, publish-artifacts]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Kubernetes Tools
+        uses: azure/setup-kubectl@v3
+
+      - name: Deploy Canary
+        run: |
+          ./infrastructure/scripts/deploy.sh production canary $VERSION
+          kubectl wait --for=condition=ready pod -l version=canary -n production --timeout=5m
+
+      - name: Monitor Canary Health
+        run: |
+          for i in {1..30}; do
+            error_rate=$(curl -s $PROMETHEUS_URL/api/v1/query?query=rate\(http_requests_total{version=\"canary\",status=~\"5..\"}[5m]\))
+            if (( $(echo "$error_rate > $ERROR_RATE_THRESHOLD" | bc -l) )); then
+              echo "Canary error rate too high: $error_rate"
+              exit 1
+            fi
+            sleep $HEALTH_CHECK_INTERVAL
+          done
+
+      - name: Promote to Production
+        if: success()
+        run: |
+          kubectl patch service api-gateway -n production -p '{"spec":{"selector":{"version":"stable"}}}'
+          kubectl delete deployment -l version=canary -n production
+
+      - name: Notify Release Status
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          slack-message: "Production Release ${{ job.status }}: ${{ env.VERSION }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  rollback:
+    name: Rollback Release
+    needs: [deploy-production]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute Rollback
+        run: |
+          ./infrastructure/scripts/rollback.sh production $VERSION
+          kubectl wait --for=condition=ready pod -l version=stable -n production --timeout=5m
+
+      - name: Notify Rollback Status
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          slack-message: "Release Rollback Completed: ${{ env.VERSION }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
