@@ -1,0 +1,100 @@
+# Enhanced NetworkPolicy configuration implementing zero-trust network security model
+# Version: 1.0.0
+# Kubernetes API Version: networking.k8s.io/v1
+
+# Default deny-all policy for zero-trust implementation
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: task-management
+  annotations:
+    security.istio.io/tlsMode: "strict"
+    policy.monitoring/enabled: "true"
+    policy.compliance/level: "strict"
+    policy.audit/enabled: "true"
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+# Allow traffic from API Gateway to microservices
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-gateway
+  namespace: task-management
+  annotations:
+    security.istio.io/tlsMode: "strict"
+    nginx.ingress.kubernetes.io/rate-limit: "100r/s"
+    nginx.ingress.kubernetes.io/security-headers: "enabled"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: task-management
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: api-gateway
+    ports:
+    - port: 3001  # Auth Service
+      protocol: TCP
+    - port: 8080  # Task/Project Services
+      protocol: TCP
+    - port: 3002  # Notification Service
+      protocol: TCP
+    - port: 3003  # Search Service
+      protocol: TCP
+---
+# Allow internal communication between microservices
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-internal-communication
+  namespace: task-management
+  annotations:
+    security.istio.io/mtls: "strict"
+    policy.monitoring/enabled: "true"
+    policy.audit/enabled: "true"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: task-management
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/part-of: task-management
+---
+# Allow monitoring and metrics collection
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring
+  namespace: task-management
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    policy.monitoring/retention: "30d"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: task-management
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - port: 9090
+      protocol: TCP
