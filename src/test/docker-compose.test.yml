@@ -1,0 +1,151 @@
+version: '3.8'
+
+services:
+  test-postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_DB: taskmanager_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - test_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d taskmanager_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  test-redis:
+    image: redis:7.0-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - test_redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  test-elasticsearch:
+    image: elasticsearch:8.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - test_elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q 'status.*green'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  test-rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: test_user
+      RABBITMQ_DEFAULT_PASS: test_password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  test-security-scanner:
+    image: owasp/zap2docker-stable
+    command: zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./security/policies:/zap/policies
+      - ./security/reports:/zap/reports
+
+  test-browser:
+    image: selenium/standalone-chrome
+    ports:
+      - "4444:4444"
+      - "7900:7900"
+    environment:
+      - SE_NODE_MAX_SESSIONS=5
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    healthcheck:
+      test: ["CMD", "/opt/bin/check-grid.sh", "--host", "0.0.0.0", "--port", "4444"]
+      interval: 15s
+      timeout: 30s
+      retries: 5
+
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      - NODE_ENV=test
+      - JEST_JUNIT_OUTPUT_DIR=./reports/junit/
+      - CYPRESS_VIDEO=false
+      - TEST_DB_HOST=test-postgres
+      - TEST_DB_PORT=5432
+      - TEST_DB_NAME=taskmanager_test
+      - TEST_DB_USER=test_user
+      - TEST_DB_PASSWORD=test_password
+      - TEST_REDIS_HOST=test-redis
+      - TEST_REDIS_PORT=6379
+      - TEST_ES_HOST=test-elasticsearch
+      - TEST_ES_PORT=9200
+      - TEST_MQ_HOST=test-rabbitmq
+      - TEST_MQ_PORT=5672
+      - TEST_MQ_USER=test_user
+      - TEST_MQ_PASSWORD=test_password
+      - TEST_SECURITY_SCAN=enabled
+      - TEST_SELENIUM_HOST=test-browser
+      - TEST_SELENIUM_PORT=4444
+    volumes:
+      - .:/app
+      - ./reports:/app/reports
+      - test_artifacts:/app/artifacts
+      - /app/node_modules
+    depends_on:
+      test-postgres:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+      test-elasticsearch:
+        condition: service_healthy
+      test-rabbitmq:
+        condition: service_healthy
+      test-browser:
+        condition: service_healthy
+    command: npm run test:all
+    healthcheck:
+      test: ["CMD", "npm", "run", "test:health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  test_postgres_data:
+    driver: local
+  test_redis_data:
+    driver: local
+  test_elasticsearch_data:
+    driver: local
+  test_artifacts:
+    driver: local
+
+networks:
+  default:
+    name: test_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1
