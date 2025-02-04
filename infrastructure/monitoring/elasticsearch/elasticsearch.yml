@@ -1,0 +1,110 @@
+# Elasticsearch Configuration (v8.0.0)
+# Production-grade settings for Task Management System's monitoring infrastructure
+
+#----------------------
+# Cluster Configuration
+#----------------------
+cluster.name: task-manager-es-cluster
+cluster.initial_master_nodes: ["es-node-1", "es-node-2", "es-node-3"]
+discovery.seed_hosts: ["es-node-1", "es-node-2", "es-node-3"]
+cluster.routing.allocation.disk.threshold_enabled: true
+cluster.routing.allocation.disk.watermark.low: "85%"
+cluster.routing.allocation.disk.watermark.high: "90%"
+cluster.routing.allocation.awareness.attributes: zone
+cluster.routing.allocation.enable: all
+cluster.routing.rebalance.enable: all
+
+#----------------------
+# Node Configuration
+#----------------------
+node.name: ${HOSTNAME}
+node.roles: ["master", "data", "ingest"]
+node.master: true
+node.data: true
+node.ingest: true
+node.max_local_storage_nodes: 1
+node.attr.zone: ${ZONE}
+
+#----------------------
+# Network Configuration
+#----------------------
+network.host: 0.0.0.0
+http.port: 9200
+transport.port: 9300
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+http.max_content_length: "100mb"
+http.max_initial_line_length: "4kb"
+http.max_header_size: "8kb"
+
+#----------------------
+# Security Configuration
+#----------------------
+xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: full
+xpack.security.transport.ssl.client_authentication: required
+xpack.security.transport.ssl.keystore.path: elastic-certificates.p12
+xpack.security.transport.ssl.truststore.path: elastic-certificates.p12
+
+# Audit Configuration
+xpack.security.audit.enabled: true
+xpack.security.audit.logfile.events.include: ["authentication_success", "authentication_failure", "access_denied", "connection_denied"]
+xpack.security.authc.api_key.enabled: true
+xpack.security.authc.token.enabled: true
+
+#----------------------
+# Memory Configuration
+#----------------------
+bootstrap.memory_lock: true
+indices.memory.index_buffer_size: "30%"
+indices.queries.cache.size: "20%"
+indices.fielddata.cache.size: "20%"
+indices.breaker.total.use_real_memory: true
+indices.breaker.request.limit: "70%"
+indices.breaker.fielddata.limit: "60%"
+
+#----------------------
+# Monitoring Configuration
+#----------------------
+xpack.monitoring.enabled: true
+xpack.monitoring.collection.enabled: true
+xpack.monitoring.elasticsearch.collection.enabled: true
+xpack.monitoring.collection.interval: "30s"
+xpack.monitoring.history.duration: "7d"
+xpack.monitoring.collection.cluster.stats.timeout: "10s"
+xpack.monitoring.collection.node.stats.timeout: "10s"
+
+#----------------------
+# Index Configuration
+#----------------------
+action.auto_create_index: true
+action.destructive_requires_name: true
+indices.recovery.max_bytes_per_sec: "50mb"
+indices.lifecycle.history_index_enabled: true
+indices.lifecycle.poll_interval: "10m"
+indices.default_pipeline: default_pipeline
+indices.recovery.max_concurrent_file_chunks: 5
+
+#----------------------
+# Logging Configuration
+#----------------------
+logger.level: INFO
+log_format.type: json
+log_format.properties:
+  timestamp: ${timestamp}
+  level: ${level}
+  component: ${component}
+  cluster.name: ${cluster.name}
+  node.name: ${node.name}
+  message: ${message}
+  stacktrace: ${stacktrace}
+  thread_name: ${thread_name}
+  node.ip: ${node.ip}
+
+# Log Rotation Settings
+log_rotation.enabled: true
+log_rotation.file_size: "100MB"
+log_rotation.max_files: 10
+log_rotation.compress: true
+log_rotation.delete_after_days: 30
