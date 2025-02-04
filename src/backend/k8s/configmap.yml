@@ -1,0 +1,186 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: task-management-config
+  namespace: task-management
+  labels:
+    app: task-management
+    environment: production
+data:
+  # API Gateway Configuration
+  api-gateway.yaml: |
+    kong:
+      admin_url: http://kong-admin:8001
+      proxy_url: http://kong-proxy:8000
+      rate_limiting:
+        user_hour: 1000
+        org_hour: 5000
+        policy: redis
+        redis:
+          host: redis-cache
+          port: 6379
+          timeout: 2000
+          database: 0
+      cors:
+        enabled: true
+        allowed_origins:
+          - "*"
+        allowed_methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+        allowed_headers:
+          - Authorization
+          - Content-Type
+          - X-Requested-With
+          - X-Kong-Response-Time
+        expose_headers:
+          - X-Kong-Response-Time
+          - X-Kong-Upstream-Latency
+        max_age: 3600
+        credentials: true
+      monitoring:
+        metrics_enabled: true
+        prometheus_metrics: true
+        status_endpoints:
+          - /status
+          - /metrics
+        health_checks:
+          active:
+            timeout: 1
+            concurrency: 10
+            healthy:
+              interval: 5
+              successes: 2
+            unhealthy:
+              interval: 5
+              http_failures: 2
+
+  # Authentication Service Configuration
+  auth-service.yaml: |
+    session:
+      max_age: 24h
+      secure: true
+      http_only: true
+      same_site: strict
+      domain: .taskmanager.com
+      path: /
+      rolling: true
+    password:
+      min_length: 12
+      require_uppercase: true
+      require_lowercase: true
+      require_numbers: true
+      require_special_chars: true
+      max_attempts: 5
+      lockout_duration: 15m
+      history_size: 5
+      max_age: 90d
+    mfa:
+      enabled: true
+      issuer: Task Management System
+      algorithm: sha1
+      digits: 6
+      step: 30
+      window: 1
+      backup_codes: 10
+    token:
+      access_token_ttl: 15m
+      refresh_token_ttl: 7d
+      signing_algorithm: RS256
+      key_rotation_interval: 24h
+
+  # Task Service Configuration
+  task-service.yaml: |
+    spring:
+      application:
+        name: task-service
+      datasource:
+        driver_class_name: org.postgresql.Driver
+        hikari:
+          minimum_idle: 5
+          maximum_pool_size: 20
+          idle_timeout: 300000
+          connection_timeout: 20000
+          max_lifetime: 1200000
+          pool_name: TaskHikariCP
+      jpa:
+        hibernate:
+          ddl_auto: validate
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+          batch_size: 50
+          fetch_size: 100
+          show_sql: false
+          format_sql: false
+      cache:
+        type: redis
+        timeout: 2000
+        lettuce:
+          pool:
+            max_active: 8
+            max_idle: 8
+            min_idle: 2
+            max_wait: 1000
+    server:
+      compression:
+        enabled: true
+        mime_types: application/json,application/xml,text/html,text/plain
+        min_response_size: 1024
+      tomcat:
+        max_threads: 200
+        min_spare_threads: 10
+        max_connections: 10000
+        accept_count: 100
+        connection_timeout: 20000
+
+  # Monitoring Configuration
+  monitoring.yaml: |
+    metrics:
+      enabled: true
+      prometheus:
+        enabled: true
+        path: /actuator/prometheus
+        step: 60s
+      distribution:
+        percentiles:
+          - 0.5
+          - 0.75
+          - 0.95
+          - 0.99
+        sla:
+          - 100ms
+          - 500ms
+          - 1000ms
+    health:
+      enabled: true
+      probes:
+        liveness: /actuator/health/liveness
+        readiness: /actuator/health/readiness
+      show_details: when_authorized
+      db_timeout: 5s
+      redis_timeout: 2s
+    tracing:
+      enabled: true
+      sampling_rate: 0.1
+      exclude_patterns:
+        - /actuator/**
+        - /favicon.ico
+
+  # Logging Configuration
+  logging.yaml: |
+    level:
+      root: INFO
+      com.taskmanager: INFO
+      org.springframework: INFO
+      org.hibernate: WARN
+    pattern:
+      console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+      file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file:
+      name: /var/log/taskmanager/application.log
+      max_size: 100MB
+      max_history: 30
+      total_size_cap: 3GB
