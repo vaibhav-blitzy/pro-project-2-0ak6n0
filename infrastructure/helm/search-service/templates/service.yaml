@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "search-service.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ template "search-service.name" . }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: search
+    app.kubernetes.io/part-of: task-management-system
+  annotations:
+    # Prometheus monitoring integration
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.service.port }}"
+    # Service metadata
+    service.kubernetes.io/description: "Search service powered by Elasticsearch"
+    service.kubernetes.io/version: "{{ .Chart.Version }}"
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ template "search-service.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: search
+  # Ensure stable network identity
+  sessionAffinity: None
+  # Optimize for internal cluster communication
+  internalTrafficPolicy: Cluster
+  # Enable service topology aware hints
+  topologyKeys:
+    - "kubernetes.io/hostname"
+    - "topology.kubernetes.io/zone"
+    - "topology.kubernetes.io/region"
