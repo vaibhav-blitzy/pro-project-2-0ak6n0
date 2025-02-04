@@ -1,0 +1,91 @@
+# Kibana Configuration v8.0.0
+# Enterprise-grade configuration for Task Management System's monitoring infrastructure
+
+#----------------------
+# Server Configuration
+#----------------------
+server.name: task-manager-kibana
+server.host: 0.0.0.0
+server.port: ${KIBANA_PORT}
+server.publicBaseUrl: https://kibana.taskmanager.com
+server.maxPayloadBytes: 10485760
+
+# SSL Configuration
+server.ssl.enabled: true
+server.ssl.certificate: /etc/kibana/certs/kibana.crt
+server.ssl.key: /etc/kibana/certs/kibana.key
+
+#----------------------
+# Elasticsearch Configuration
+#----------------------
+elasticsearch.hosts: ['${ELASTICSEARCH_HOSTS}']
+elasticsearch.requestTimeout: 30000
+elasticsearch.shardTimeout: 30000
+elasticsearch.startupTimeout: 5000
+
+# SSL Configuration for Elasticsearch
+elasticsearch.ssl.verificationMode: full
+elasticsearch.ssl.certificate: /etc/kibana/certs/elasticsearch-client.crt
+elasticsearch.ssl.key: /etc/kibana/certs/elasticsearch-client.key
+elasticsearch.ssl.certificateAuthorities: ['/etc/kibana/certs/ca.crt']
+
+#----------------------
+# Security Configuration
+#----------------------
+xpack.security.enabled: true
+xpack.security.encryptionKey: ${KIBANA_ENCRYPTION_KEY}
+
+# Session Management
+xpack.security.session.idleTimeout: '1h'
+xpack.security.session.lifespan: '24h'
+
+# Audit Configuration
+xpack.security.audit.enabled: true
+xpack.security.audit.appender.type: json_file
+xpack.security.audit.appender.path: /var/log/kibana/audit.json
+xpack.security.audit.ignore_filters.actions: ['access:login', 'access:logout']
+
+#----------------------
+# Monitoring Configuration
+#----------------------
+monitoring.ui.container.elasticsearch.enabled: true
+monitoring.ui.container.logstash.enabled: true
+monitoring.ui.min_interval_seconds: 10
+monitoring.ui.max_bucket_size: 10000
+
+xpack.monitoring.enabled: true
+xpack.monitoring.collection.enabled: true
+xpack.monitoring.collection.interval: '30s'
+
+#----------------------
+# Logging Configuration
+#----------------------
+logging.root.level: info
+
+# File Logging
+logging.appenders.file.type: file
+logging.appenders.file.fileName: /var/log/kibana/kibana.log
+logging.appenders.file.layout.type: json
+logging.appenders.file.layout.include_context: true
+logging.appenders.file.layout.include_timestamp: true
+
+# Rolling File Configuration
+logging.appenders.rolling.type: rolling_file
+logging.appenders.rolling.policy.type: size_time
+logging.appenders.rolling.policy.size: '50MB'
+logging.appenders.rolling.policy.interval: 'daily'
+
+#----------------------
+# Telemetry Configuration
+#----------------------
+telemetry.enabled: false
+telemetry.optIn: false
+telemetry.allowChangingOptInStatus: false
+
+#----------------------
+# Saved Objects Configuration
+#----------------------
+savedObjects.maxImportPayloadBytes: 26214400
+savedObjects.maxImportExportSize: 10000
+savedObjects.perPage: 1000
+savedObjects.scrollTimeout: '30m'
