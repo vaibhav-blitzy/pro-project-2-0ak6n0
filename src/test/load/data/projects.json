@@ -1,0 +1,128 @@
+{
+  "projects": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Enterprise Data Migration Platform",
+      "description": "Large-scale data migration project with complex transformation rules",
+      "ownerId": "a67e8400-e29b-41d4-a716-446655440123",
+      "status": "IN_PROGRESS",
+      "startDate": "2024-01-15T08:00:00Z",
+      "endDate": "2024-09-30T17:00:00Z",
+      "metadata": {
+        "complexity": "HIGH",
+        "teamSize": 45,
+        "budget": {
+          "amount": 850000,
+          "currency": "USD"
+        },
+        "riskLevel": "HIGH",
+        "customFields": {
+          "stakeholderCount": 12,
+          "regulatoryCompliance": true,
+          "technicalDebtScore": 0.75
+        },
+        "tags": ["data-migration", "enterprise", "high-priority"],
+        "priority": "HIGH"
+      }
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "name": "Mobile App Redesign",
+      "description": "User interface modernization for mobile platform",
+      "ownerId": "b67e8400-e29b-41d4-a716-446655440456",
+      "status": "PLANNED",
+      "startDate": "2024-03-01T09:00:00Z",
+      "endDate": "2024-06-30T16:00:00Z",
+      "metadata": {
+        "complexity": "MEDIUM",
+        "teamSize": 8,
+        "budget": {
+          "amount": 175000,
+          "currency": "USD"
+        },
+        "riskLevel": "LOW",
+        "customFields": {
+          "platformSupport": ["iOS", "Android"],
+          "accessibilityCompliance": true
+        },
+        "tags": ["mobile", "ui-ux", "redesign"],
+        "priority": "MEDIUM"
+      }
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "name": "Legacy System Retirement",
+      "description": "Decommissioning of legacy systems with data archival",
+      "ownerId": "c67e8400-e29b-41d4-a716-446655440789",
+      "status": "COMPLETED",
+      "startDate": "2023-09-15T08:00:00Z",
+      "endDate": "2024-01-15T17:00:00Z",
+      "metadata": {
+        "complexity": "CRITICAL",
+        "teamSize": 15,
+        "budget": {
+          "amount": 1200000,
+          "currency": "USD"
+        },
+        "riskLevel": "HIGH",
+        "customFields": {
+          "systemCount": 5,
+          "dataRetentionYears": 7,
+          "complianceAudit": true
+        },
+        "tags": ["legacy", "retirement", "data-archival"],
+        "priority": "URGENT"
+      }
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "name": "Agile Transformation Initiative",
+      "description": "Organization-wide agile methodology implementation",
+      "ownerId": "d67e8400-e29b-41d4-a716-446655440012",
+      "status": "ON_HOLD",
+      "startDate": "2024-02-01T09:00:00Z",
+      "endDate": "2024-12-31T17:00:00Z",
+      "metadata": {
+        "complexity": "HIGH",
+        "teamSize": 75,
+        "budget": {
+          "amount": 450000,
+          "currency": "USD"
+        },
+        "riskLevel": "MEDIUM",
+        "customFields": {
+          "departmentCount": 8,
+          "trainingRequired": true,
+          "changeManagementScore": 0.85
+        },
+        "tags": ["agile", "transformation", "organization-wide"],
+        "priority": "HIGH"
+      }
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440004",
+      "name": "Security Compliance Update",
+      "description": "Implementation of enhanced security measures",
+      "ownerId": "e67e8400-e29b-41d4-a716-446655440345",
+      "status": "CANCELLED",
+      "startDate": "2023-11-01T08:00:00Z",
+      "endDate": "2024-04-30T17:00:00Z",
+      "metadata": {
+        "complexity": "CRITICAL",
+        "teamSize": 12,
+        "budget": {
+          "amount": 350000,
+          "currency": "USD"
+        },
+        "riskLevel": "HIGH",
+        "customFields": {
+          "securityLevel": "HIGHEST",
+          "complianceFrameworks": ["ISO27001", "SOC2", "GDPR"],
+          "penetrationTestRequired": true
+        },
+        "tags": ["security", "compliance", "critical"],
+        "priority": "URGENT"
+      }
+    }
+  ]
+}
