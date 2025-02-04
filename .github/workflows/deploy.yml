@@ -1,0 +1,221 @@
+name: Deploy Task Management System
+
+on:
+  push:
+    branches: ['main', 'develop']
+    paths:
+      - 'src/**'
+      - 'infrastructure/**'
+  workflow_run:
+    workflows: ['build.yml', 'security-scan.yml']
+    types: [completed]
+    branches: ['main', 'develop']
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+  ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
+  DEPLOY_TIMEOUT: ${{ github.ref == 'refs/heads/main' && '600' || '300' }}
+  ERROR_THRESHOLD: ${{ github.ref == 'refs/heads/main' && '0.001' || '0.005' }}
+  NODE_ENV: production
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-deployment:
+    name: Prepare Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_id: ${{ steps.generate-id.outputs.deploy_id }}
+    steps:
+      - name: Generate Deployment ID
+        id: generate-id
+        run: echo "deploy_id=$(date +%s)-${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: artifacts
+
+      - name: Verify Artifact Integrity
+        run: |
+          for file in artifacts/**/*.sig; do
+            gpg --verify "$file" "${file%.sig}"
+          done
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: prepare-deployment
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Kubernetes Tools
+        uses: azure/setup-kubectl@v3
+        
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+
+      - name: Deploy Blue Environment
+        run: |
+          ./infrastructure/scripts/deploy.sh staging blue ${{ needs.prepare-deployment.outputs.deploy_id }}
+          
+      - name: Validate Blue Environment
+        run: |
+          kubectl wait --for=condition=ready pod -l color=blue -n staging --timeout=5m
+          ./infrastructure/scripts/validate.sh staging blue
+
+      - name: Run Integration Tests
+        run: |
+          npm run test:integration -- --environment staging --target blue
+          
+      - name: Monitor Error Rates
+        run: |
+          for i in {1..30}; do
+            error_rate=$(curl -s $PROMETHEUS_URL/api/v1/query?query=rate\(http_requests_total{status=~"5.."}[5m]\))
+            if (( $(echo "$error_rate > $ERROR_THRESHOLD" | bc -l) )); then
+              echo "Error rate too high: $error_rate"
+              exit 1
+            fi
+            sleep 10
+          done
+
+      - name: Switch Traffic
+        run: |
+          kubectl patch service api-gateway -n staging -p '{"spec":{"selector":{"color":"blue"}}}'
+          
+      - name: Terminate Green Environment
+        if: success()
+        run: |
+          kubectl delete deployment -l color=green -n staging
+
+      - name: Notify Deployment Status
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          slack-message: "Staging Deployment ${{ job.status }}: ${{ needs.prepare-deployment.outputs.deploy_id }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  deploy-production:
+    name: Deploy to Production
+    needs: [prepare-deployment]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Kubernetes Tools
+        uses: azure/setup-kubectl@v3
+        
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+
+      - name: Deploy Canary (10% traffic)
+        run: |
+          ./infrastructure/scripts/deploy.sh production canary ${{ needs.prepare-deployment.outputs.deploy_id }}
+          
+      - name: Validate Canary Deployment
+        run: |
+          kubectl wait --for=condition=ready pod -l version=canary -n production --timeout=5m
+          ./infrastructure/scripts/validate.sh production canary
+
+      - name: Monitor Canary Metrics
+        run: |
+          for i in {1..30}; do
+            error_rate=$(curl -s $PROMETHEUS_URL/api/v1/query?query=rate\(http_requests_total{version="canary",status=~"5.."}[5m]\))
+            if (( $(echo "$error_rate > $ERROR_THRESHOLD" | bc -l) )); then
+              echo "Canary error rate too high: $error_rate"
+              exit 1
+            fi
+            sleep 10
+          done
+
+      - name: Gradual Traffic Migration
+        run: |
+          for weight in 25 50 75 100; do
+            echo "Increasing traffic to ${weight}%"
+            kubectl patch service api-gateway -n production -p "{\"spec\":{\"trafficPolicy\":{\"weight\":$weight}}}"
+            sleep 300
+            
+            error_rate=$(curl -s $PROMETHEUS_URL/api/v1/query?query=rate\(http_requests_total{version="canary",status=~"5.."}[5m]\))
+            if (( $(echo "$error_rate > $ERROR_THRESHOLD" | bc -l) )); then
+              echo "Error rate too high at ${weight}%: $error_rate"
+              exit 1
+            fi
+          done
+
+      - name: Update DR Environment
+        if: success()
+        run: |
+          ./infrastructure/scripts/sync-dr.sh ${{ needs.prepare-deployment.outputs.deploy_id }}
+
+      - name: Cleanup Old Version
+        if: success()
+        run: |
+          kubectl delete deployment -l version=stable -n production
+
+      - name: Notify Deployment Status
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          slack-message: "Production Deployment ${{ job.status }}: ${{ needs.prepare-deployment.outputs.deploy_id }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  rollback:
+    name: Rollback Deployment
+    needs: [prepare-deployment]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Kubernetes Tools
+        uses: azure/setup-kubectl@v3
+
+      - name: Execute Rollback
+        run: |
+          ./infrastructure/scripts/rollback.sh ${{ env.ENVIRONMENT }} ${{ needs.prepare-deployment.outputs.deploy_id }}
+
+      - name: Verify Rollback
+        run: |
+          ./infrastructure/scripts/validate.sh ${{ env.ENVIRONMENT }} previous
+
+      - name: Notify Rollback Status
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          slack-message: "Deployment Rollback ${{ job.status }}: ${{ needs.prepare-deployment.outputs.deploy_id }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
