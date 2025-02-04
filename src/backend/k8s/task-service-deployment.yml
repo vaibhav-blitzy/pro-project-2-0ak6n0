@@ -1,0 +1,136 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-service
+  namespace: task-management
+  labels:
+    app: task-service
+    tier: backend
+    version: 1.0.0
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/actuator/prometheus"
+    prometheus.io/port: "8083"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: task-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: task-service
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8083"
+    spec:
+      serviceAccountName: task-service
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+      - name: task-service
+        image: task-management/task-service:1.0.0
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8083
+          protocol: TCP
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        - name: SERVER_PORT
+          value: "8083"
+        - name: POSTGRES_URL
+          valueFrom:
+            configMapKeyRef:
+              name: task-service-config
+              key: database-url
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: task-service-config
+              key: database-user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: task-service-secrets
+              key: db-password
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: task-service-config
+              key: redis-host
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: task-service-secrets
+              key: redis-password
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8083
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8083
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+          readOnly: true
+        - name: tmp-volume
+          mountPath: /tmp
+        - name: log-volume
+          mountPath: /logs
+      volumes:
+      - name: config-volume
+        configMap:
+          name: task-service-config
+      - name: tmp-volume
+        emptyDir: {}
+      - name: log-volume
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - task-service
+              topologyKey: kubernetes.io/hostname
+      tolerations:
+      - key: "node.kubernetes.io/unreachable"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 30
+      - key: "node.kubernetes.io/not-ready"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 30
