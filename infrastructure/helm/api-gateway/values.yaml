@@ -1,0 +1,213 @@
+# Kong API Gateway Helm Values Configuration
+# Version: 3.4.1
+# Enhanced configuration for Task Management System with security, performance and monitoring
+
+nameOverride: "api-gateway"
+fullnameOverride: "api-gateway"
+
+# Deployment configuration
+deployment:
+  replicaCount: 3
+  
+  image:
+    repository: kong/kong-gateway
+    tag: "3.4.1"
+    pullPolicy: IfNotPresent
+  
+  # Resource allocation for optimal performance
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  
+  # High availability configuration
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  
+  # Pod distribution strategy
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: api-gateway
+          topologyKey: kubernetes.io/hostname
+
+# Kong specific configuration
+kong:
+  proxy:
+    enabled: true
+    type: LoadBalancer
+    http:
+      enabled: true
+      port: 80
+    tls:
+      enabled: true
+      port: 443
+  
+  admin:
+    enabled: true
+    type: ClusterIP
+    http:
+      enabled: true
+      port: 8001
+  
+  # Database configuration
+  postgresql:
+    enabled: true
+    persistence:
+      size: 10Gi
+    
+  # Health checks
+  readinessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+    
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+
+# Plugin configurations
+plugins:
+  # Rate limiting configuration
+  rate_limiting:
+    enabled: true
+    config:
+      user_hour: 1000
+      org_hour: 5000
+      policy: redis
+      fault_tolerant: true
+      hide_client_headers: false
+      redis:
+        host: redis-master
+        port: 6379
+        timeout: 2000
+        database: 0
+  
+  # JWT authentication
+  jwt:
+    enabled: true
+    config:
+      key_claim_name: kid
+      claims_to_verify:
+        - exp
+        - nbf
+      maximum_expiration: 3600
+  
+  # IP restriction for security
+  ip_restriction:
+    enabled: true
+    config:
+      allow:
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+  
+  # CORS configuration
+  cors:
+    enabled: true
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+      headers:
+        - Authorization
+        - Content-Type
+        - X-Request-ID
+      exposed_headers:
+        - X-Kong-Response-Time
+      credentials: true
+      max_age: 3600
+  
+  # Prometheus metrics
+  prometheus:
+    enabled: true
+    config:
+      status_code: true
+      latency: true
+      bandwidth: true
+      per_consumer: true
+  
+  # Request transformer
+  request_transformer:
+    enabled: true
+    config:
+      add:
+        headers:
+          - "X-Request-ID:$(uuid)"
+          - "X-Service-Version:1.0"
+  
+  # Response transformer
+  response_transformer:
+    enabled: true
+    config:
+      add:
+        headers:
+          - "X-Content-Type-Options:nosniff"
+          - "Strict-Transport-Security:max-age=31536000"
+          - "X-Frame-Options:DENY"
+          - "X-XSS-Protection:1; mode=block"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: kong
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: api.taskmanagement.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: api-gateway-tls
+      hosts:
+        - api.taskmanagement.com
+
+# Service monitoring
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  namespace: monitoring
+
+# Pod disruption budget for high availability
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Pod security context
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+# Network policies
+networkPolicy:
+  enabled: true
+  ingressRules:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
