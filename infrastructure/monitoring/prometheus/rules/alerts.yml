@@ -1,0 +1,165 @@
+# Prometheus Alerting Rules for Task Management System
+# Version: 1.0
+# Prometheus Version: 2.45.0
+
+groups:
+  # Service Availability Alerts
+  - name: service_availability
+    rules:
+    - alert: HighErrorRate
+      expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+      for: 5m
+      labels:
+        severity: critical
+        category: availability
+      annotations:
+        summary: High error rate detected
+        description: Service {{ $labels.service }} has error rate above 5%
+
+    - alert: ServiceDown
+      expr: up == 0
+      for: 5m
+      labels:
+        severity: critical
+        category: availability
+      annotations:
+        summary: Service is down
+        description: Service {{ $labels.service }} is not responding
+
+  # Performance Alerts
+  - name: performance
+    rules:
+    - alert: HighLatency
+      expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 0.5
+      for: 5m
+      labels:
+        severity: warning
+        category: performance
+      annotations:
+        summary: High latency detected
+        description: Service {{ $labels.service }} has 95th percentile latency above 500ms
+
+    - alert: HighCPUUsage
+      expr: rate(process_cpu_seconds_total[5m]) * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+        category: performance
+      annotations:
+        summary: High CPU usage detected
+        description: Service {{ $labels.service }} CPU usage is above 80%
+
+  # Resource Utilization Alerts
+  - name: resource_utilization
+    rules:
+    - alert: HighMemoryUsage
+      expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+      for: 5m
+      labels:
+        severity: warning
+        category: resources
+      annotations:
+        summary: High memory usage detected
+        description: Node {{ $labels.instance }} memory usage is above 85%
+
+    - alert: DiskSpaceRunningLow
+      expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes * 100 > 85
+      for: 5m
+      labels:
+        severity: warning
+        category: resources
+      annotations:
+        summary: Disk space running low
+        description: Node {{ $labels.instance }} disk usage is above 85% on {{ $labels.mountpoint }}
+
+  # Database Alerts
+  - name: database
+    rules:
+    - alert: HighDatabaseConnections
+      expr: pg_stat_activity_count > 80
+      for: 5m
+      labels:
+        severity: warning
+        category: database
+      annotations:
+        summary: High database connections
+        description: Database {{ $labels.instance }} has over 80% connection pool utilization
+
+    - alert: SlowQueries
+      expr: rate(pg_stat_activity_max_tx_duration{state="active"}[5m]) > 30
+      for: 5m
+      labels:
+        severity: warning
+        category: database
+      annotations:
+        summary: Slow database queries detected
+        description: Database {{ $labels.instance }} has queries taking longer than 30 seconds
+
+  # Security Alerts
+  - name: security
+    rules:
+    - alert: HighAuthenticationFailures
+      expr: rate(authentication_failures_total[5m]) > 10
+      for: 5m
+      labels:
+        severity: critical
+        category: security
+      annotations:
+        summary: High authentication failures detected
+        description: Service {{ $labels.service }} experiencing high rate of authentication failures
+
+    - alert: UnauthorizedAccessAttempts
+      expr: rate(unauthorized_access_attempts_total[5m]) > 5
+      for: 5m
+      labels:
+        severity: critical
+        category: security
+      annotations:
+        summary: Unauthorized access attempts detected
+        description: Multiple unauthorized access attempts detected for service {{ $labels.service }}
+
+  # API Health Alerts
+  - name: api_health
+    rules:
+    - alert: HighAPIErrorRate
+      expr: sum(rate(api_requests_total{status=~"5.."}[5m])) by (endpoint) / sum(rate(api_requests_total[5m])) by (endpoint) > 0.05
+      for: 5m
+      labels:
+        severity: critical
+        category: api
+      annotations:
+        summary: High API error rate detected
+        description: API endpoint {{ $labels.endpoint }} has error rate above 5%
+
+    - alert: APILatency
+      expr: histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[5m])) by (le, endpoint)) > 0.5
+      for: 5m
+      labels:
+        severity: warning
+        category: api
+      annotations:
+        summary: High API latency detected
+        description: API endpoint {{ $labels.endpoint }} has 95th percentile latency above 500ms
+
+  # SLA Compliance Alerts
+  - name: sla_compliance
+    rules:
+    - alert: SLABreach
+      expr: sla_compliance_ratio < 0.999
+      for: 5m
+      labels:
+        severity: critical
+        category: sla
+      annotations:
+        summary: SLA breach detected
+        description: Service {{ $labels.service }} SLA compliance has dropped below 99.9%
+
+    - alert: ErrorBudgetBurn
+      expr: error_budget_remaining < 0.2
+      for: 5m
+      labels:
+        severity: warning
+        category: sla
+      annotations:
+        summary: Error budget burning too fast
+        description: Service {{ $labels.service }} has less than 20% error budget remaining
