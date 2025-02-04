@@ -1,0 +1,29 @@
+# Task Management System - Crawler Configuration
+# Version: 1.0.0
+# Last Updated: 2024
+
+# Default User Agent Rules
+User-agent: *
+
+# Allowed Paths - Public Routes
+Allow: /
+Allow: /dashboard
+Allow: /projects
+Allow: /tasks
+Allow: /search
+
+# Restricted Paths - Protected Routes
+Disallow: /api/
+Disallow: /auth/
+Disallow: /settings/
+
+# Protected Assets
+Disallow: /*.json
+Disallow: /*.js
+Disallow: /*.css
+
+# Rate Limiting
+Crawl-delay: 10
+
+# Sitemap Location
+Sitemap: /sitemap.xml
