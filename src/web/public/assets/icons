@@ -1,0 +1,91 @@
+├── favicon.ico
+├── logo.svg
+└── app-icons/
+    ├── navigation/
+    │   ├── menu.svg
+    │   ├── back.svg
+    │   ├── forward.svg
+    │   └── close.svg
+    ├── actions/
+    │   ├── add.svg
+    │   ├── edit.svg
+    │   ├── delete.svg
+    │   └── save.svg
+    ├── status/
+    │   ├── success.svg
+    │   ├── warning.svg
+    │   ├── error.svg
+    │   └── info.svg
+    ├── notifications/
+    │   ├── bell.svg
+    │   ├── email.svg
+    │   └── update.svg
+    ├── user-interface/
+    │   ├── search.svg
+    │   ├── settings.svg
+    │   ├── help.svg
+    │   └── profile.svg
+    ├── data-visualization/
+    │   ├── chart.svg
+    │   ├── graph.svg
+    │   └── analytics.svg
+    └── file-management/
+        ├── upload.svg
+        ├── download.svg
+        └── attachment.svg
+
+# favicon.ico
+[Binary ICO file with multiple resolutions: 16x16, 32x32, 48x48, 64x64]
+
+# logo.svg
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Task Management System Logo">
+  <title>Task Management System Logo</title>
+  <desc>Official logo representing the Task Management System application</desc>
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+    .logo-primary {
+      fill: currentColor;
+    }
+    @media (prefers-color-scheme: dark) {
+      .logo-primary {
+        fill: #ffffff;
+      }
+    }
+    @media (forced-colors: active) {
+      .logo-primary {
+        fill: CanvasText;
+      }
+    }
+  </style>
+  <path class="logo-primary" d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+</svg>
+
+# app-icons/navigation/menu.svg
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Menu">
+  <title>Menu</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+    .icon {
+      fill: currentColor;
+    }
+    @media (prefers-color-scheme: dark) {
+      .icon {
+        fill: #ffffff;
+      }
+    }
+    @media (forced-colors: active) {
+      .icon {
+        fill: CanvasText;
+      }
+    }
+  </style>
+  <path class="icon" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+</svg>
