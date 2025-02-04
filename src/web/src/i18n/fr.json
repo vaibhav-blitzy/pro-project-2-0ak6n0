@@ -1,0 +1,236 @@
+{
+  "common": {
+    "actions": {
+      "add": "Ajouter",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "close": "Fermer",
+      "confirm": "Confirmer",
+      "back": "Retour",
+      "next": "Suivant",
+      "search": "Rechercher",
+      "filter": "Filtrer",
+      "refresh": "Actualiser",
+      "upload": "Télécharger",
+      "download": "Télécharger",
+      "share": "Partager"
+    },
+    "status": {
+      "loading": "Chargement...",
+      "success": "Succès",
+      "error": "Erreur",
+      "warning": "Avertissement",
+      "info": "Information"
+    },
+    "time": {
+      "today": "Aujourd'hui",
+      "yesterday": "Hier",
+      "tomorrow": "Demain",
+      "days_ago": "Il y a {{count}} jours",
+      "in_days": "Dans {{count}} jours",
+      "date_format": "DD/MM/YYYY",
+      "time_format": "HH:mm",
+      "datetime_format": "DD/MM/YYYY HH:mm"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "remember_me": "Se souvenir de moi",
+      "forgot_password": "Mot de passe oublié ?",
+      "submit": "Se connecter",
+      "no_account": "Vous n'avez pas de compte ?"
+    },
+    "register": {
+      "title": "Inscription",
+      "first_name": "Prénom",
+      "last_name": "Nom",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "confirm_password": "Confirmer le mot de passe",
+      "submit": "S'inscrire",
+      "has_account": "Vous avez déjà un compte ?"
+    }
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue, {{name}}",
+    "overview": {
+      "tasks_total": "Tâches totales",
+      "tasks_completed": "Tâches terminées",
+      "tasks_pending": "Tâches en attente",
+      "projects_active": "Projets actifs"
+    },
+    "recent_activity": "Activité récente",
+    "upcoming_deadlines": "Échéances à venir"
+  },
+  "tasks": {
+    "title": "Tâches",
+    "create": {
+      "title": "Créer une tâche",
+      "name": "Nom de la tâche",
+      "description": "Description",
+      "due_date": "Date d'échéance",
+      "priority": {
+        "label": "Priorité",
+        "low": "Basse",
+        "medium": "Moyenne",
+        "high": "Haute"
+      },
+      "status": {
+        "label": "Statut",
+        "todo": "À faire",
+        "in_progress": "En cours",
+        "review": "En révision",
+        "done": "Terminé"
+      }
+    },
+    "filters": {
+      "all": "Toutes",
+      "assigned_to_me": "Assignées à moi",
+      "created_by_me": "Créées par moi",
+      "completed": "Terminées"
+    }
+  },
+  "projects": {
+    "title": "Projets",
+    "create": {
+      "title": "Créer un projet",
+      "name": "Nom du projet",
+      "description": "Description",
+      "start_date": "Date de début",
+      "end_date": "Date de fin",
+      "team": "Équipe"
+    },
+    "details": {
+      "overview": "Aperçu",
+      "tasks": "Tâches",
+      "team": "Équipe",
+      "files": "Fichiers",
+      "timeline": "Chronologie"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "mark_all_read": "Marquer tout comme lu",
+    "types": {
+      "task_assigned": "Tâche assignée",
+      "task_completed": "Tâche terminée",
+      "comment_added": "Nouveau commentaire",
+      "mention": "Mention",
+      "deadline": "Échéance proche"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "profile": {
+      "title": "Profil",
+      "personal_info": "Informations personnelles",
+      "change_password": "Changer le mot de passe",
+      "preferences": "Préférences"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "email": "Notifications par e-mail",
+      "push": "Notifications push",
+      "desktop": "Notifications bureau"
+    },
+    "language": {
+      "title": "Langue",
+      "select": "Sélectionner la langue"
+    }
+  },
+  "search": {
+    "placeholder": "Rechercher...",
+    "no_results": "Aucun résultat trouvé",
+    "filters": {
+      "type": "Type",
+      "date": "Date",
+      "status": "Statut"
+    }
+  },
+  "calendar": {
+    "title": "Calendrier",
+    "views": {
+      "month": "Mois",
+      "week": "Semaine",
+      "day": "Jour",
+      "agenda": "Agenda"
+    },
+    "events": {
+      "create": "Créer un événement",
+      "edit": "Modifier l'événement",
+      "delete": "Supprimer l'événement"
+    }
+  },
+  "files": {
+    "title": "Fichiers",
+    "upload": {
+      "title": "Télécharger des fichiers",
+      "drag_drop": "Glisser-déposer des fichiers ici",
+      "select": "Sélectionner des fichiers"
+    },
+    "types": {
+      "image": "Image",
+      "document": "Document",
+      "spreadsheet": "Feuille de calcul",
+      "presentation": "Présentation",
+      "other": "Autre"
+    }
+  },
+  "team": {
+    "title": "Équipe",
+    "members": {
+      "add": "Ajouter un membre",
+      "remove": "Retirer un membre",
+      "role": {
+        "admin": "Administrateur",
+        "manager": "Gestionnaire",
+        "member": "Membre"
+      }
+    }
+  },
+  "errors": {
+    "required": "Ce champ est requis",
+    "invalid_email": "Adresse e-mail invalide",
+    "password_mismatch": "Les mots de passe ne correspondent pas",
+    "server_error": "Erreur serveur",
+    "network_error": "Erreur réseau",
+    "unauthorized": "Non autorisé",
+    "forbidden": "Accès interdit"
+  },
+  "accessibility": {
+    "skip_to_content": "Passer au contenu",
+    "navigation": "Navigation",
+    "aria_labels": {
+      "menu": "Menu principal",
+      "search": "Recherche",
+      "notifications": "Notifications",
+      "user_menu": "Menu utilisateur"
+    },
+    "screen_reader": {
+      "loading": "Chargement en cours",
+      "success": "Action réussie",
+      "error": "Une erreur s'est produite"
+    }
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "navigation": {
+      "dashboard": "Alt + D",
+      "tasks": "Alt + T",
+      "projects": "Alt + P",
+      "calendar": "Alt + C"
+    },
+    "actions": {
+      "new_task": "Alt + N",
+      "save": "Ctrl + S",
+      "search": "Ctrl + K",
+      "help": "Alt + H"
+    }
+  }
+}
