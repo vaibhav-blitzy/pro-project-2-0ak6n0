@@ -1,0 +1,173 @@
+# Task Service Application Configuration
+# Spring Boot Version: 3.0.0
+# Application Version: 1.0.0
+
+spring:
+  application:
+    name: task-service
+
+  # Database Configuration with Hikari Connection Pool
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/taskmanager}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+      pool-name: TaskServiceHikariCP
+      validation-timeout: 5000
+      leak-detection-threshold: 60000
+
+  # JPA Configuration with Performance Optimizations
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 50
+          fetch_size: 100
+        order_inserts: true
+        order_updates: true
+        generate_statistics: true
+        session:
+          events:
+            log:
+              LOG_QUERIES_SLOWER_THAN_MS: 250
+    open-in-view: false
+
+  # Redis Cache Configuration
+  cache:
+    type: redis
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: 1000
+        shutdown-timeout: 200ms
+
+  # Flyway Migration Configuration
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    clean-disabled: true
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8083}
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain
+    min-response-size: 1024
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 10
+    max-connections: 10000
+    accept-count: 100
+    connection-timeout: 5000
+    max-swallow-size: 2MB
+    max-http-form-post-size: 2MB
+  error:
+    include-stacktrace: never
+    include-message: never
+
+# Management and Monitoring Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus,info,flyway
+      base-path: /actuator
+      cors:
+        allowed-origins: "*"
+        allowed-methods: GET
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
+        step: 1m
+    distribution:
+      percentiles-histogram: true
+      sla:
+        http:
+          server:
+            requests: 100ms,500ms
+    web:
+      server:
+        request:
+          autotime:
+            enabled: true
+
+# WebSocket Configuration for Real-time Updates
+websocket:
+  endpoint: /ws-tasks
+  allowed-origins: "*"
+  destination-prefixes:
+    - /topic
+    - /queue
+  user-registry: task-users
+  heartbeat:
+    incoming: 25000
+    outgoing: 25000
+  message-size-limit: 65536
+  send-buffer-size-limit: 524288
+  send-time-limit: 10000
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.taskmanager: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/task-service.log
+    max-size: 10MB
+    max-history: 10
+
+# Task Service Specific Configuration
+task-service:
+  security:
+    api-key-header: X-API-Key
+  performance:
+    cache-ttl: 3600
+    batch-size: 100
+  resilience:
+    retry-attempts: 3
+    circuit-breaker:
+      failure-rate-threshold: 50
+      wait-duration-in-open-state: 60000
+  cors:
+    allowed-origins: "*"
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS,PATCH
+    allowed-headers: "*"
+    max-age: 3600
