@@ -1,0 +1,214 @@
+{
+  "common": {
+    "buttons": {
+      "submit": "Enviar",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "delete": "Eliminar",
+      "edit": "Editar",
+      "close": "Cerrar",
+      "back": "Atrás",
+      "next": "Siguiente",
+      "add": "Añadir",
+      "search": "Buscar",
+      "filter": "Filtrar",
+      "clear": "Limpiar",
+      "upload": "Subir",
+      "download": "Descargar",
+      "refresh": "Actualizar"
+    },
+    "labels": {
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "description": "Descripción",
+      "status": "Estado",
+      "priority": "Prioridad",
+      "dueDate": "Fecha de vencimiento",
+      "assignee": "Asignado a",
+      "created": "Creado",
+      "updated": "Actualizado",
+      "title": "Título",
+      "category": "Categoría",
+      "tags": "Etiquetas",
+      "comments": "Comentarios",
+      "attachments": "Archivos adjuntos"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Iniciar sesión",
+      "emailPlaceholder": "Introduce tu correo electrónico",
+      "passwordPlaceholder": "Introduce tu contraseña",
+      "rememberMe": "Recordarme",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "signIn": "Iniciar sesión",
+      "noAccount": "¿No tienes una cuenta?",
+      "signUp": "Regístrate"
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "namePlaceholder": "Introduce tu nombre",
+      "emailPlaceholder": "Introduce tu correo electrónico",
+      "passwordPlaceholder": "Crea una contraseña",
+      "confirmPassword": "Confirma tu contraseña",
+      "terms": "Acepto los términos y condiciones",
+      "hasAccount": "¿Ya tienes una cuenta?",
+      "signIn": "Inicia sesión"
+    }
+  },
+  "dashboard": {
+    "title": "Panel de control",
+    "welcome": "Bienvenido, {{name}}",
+    "summary": {
+      "totalTasks": "Total de tareas",
+      "completedTasks": "Tareas completadas",
+      "pendingTasks": "Tareas pendientes",
+      "overdueTasks": "Tareas vencidas"
+    },
+    "charts": {
+      "tasksByStatus": "Tareas por estado",
+      "tasksByPriority": "Tareas por prioridad",
+      "weeklyProgress": "Progreso semanal"
+    }
+  },
+  "tasks": {
+    "title": "Tareas",
+    "create": {
+      "title": "Crear tarea",
+      "success": "Tarea creada exitosamente"
+    },
+    "edit": {
+      "title": "Editar tarea",
+      "success": "Tarea actualizada exitosamente"
+    },
+    "delete": {
+      "title": "Eliminar tarea",
+      "confirm": "¿Estás seguro de que deseas eliminar esta tarea?",
+      "success": "Tarea eliminada exitosamente"
+    },
+    "status": {
+      "todo": "Por hacer",
+      "inProgress": "En progreso",
+      "review": "En revisión",
+      "done": "Completado"
+    },
+    "priority": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta",
+      "urgent": "Urgente"
+    }
+  },
+  "projects": {
+    "title": "Proyectos",
+    "create": {
+      "title": "Crear proyecto",
+      "success": "Proyecto creado exitosamente"
+    },
+    "edit": {
+      "title": "Editar proyecto",
+      "success": "Proyecto actualizado exitosamente"
+    },
+    "delete": {
+      "title": "Eliminar proyecto",
+      "confirm": "¿Estás seguro de que deseas eliminar este proyecto?",
+      "success": "Proyecto eliminado exitosamente"
+    },
+    "status": {
+      "planning": "Planificación",
+      "active": "Activo",
+      "onHold": "En espera",
+      "completed": "Completado"
+    }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "empty": "No hay notificaciones",
+    "markRead": "Marcar como leído",
+    "markAllRead": "Marcar todas como leídas",
+    "types": {
+      "taskAssigned": "Tarea asignada",
+      "taskUpdated": "Tarea actualizada",
+      "taskCompleted": "Tarea completada",
+      "commentAdded": "Nuevo comentario",
+      "mentionedYou": "Te ha mencionado"
+    }
+  },
+  "settings": {
+    "title": "Configuración",
+    "profile": {
+      "title": "Perfil",
+      "updateSuccess": "Perfil actualizado exitosamente"
+    },
+    "preferences": {
+      "title": "Preferencias",
+      "language": "Idioma",
+      "theme": "Tema",
+      "notifications": "Notificaciones"
+    },
+    "security": {
+      "title": "Seguridad",
+      "changePassword": "Cambiar contraseña",
+      "twoFactor": "Autenticación de dos factores"
+    }
+  },
+  "errors": {
+    "network": {
+      "offline": "Sin conexión a Internet",
+      "timeout": "La solicitud ha excedido el tiempo de espera",
+      "serverError": "Error del servidor"
+    },
+    "validation": {
+      "required": "Este campo es obligatorio",
+      "email": "Correo electrónico inválido",
+      "minLength": "Mínimo {{count}} caracteres",
+      "maxLength": "Máximo {{count}} caracteres",
+      "numeric": "Solo se permiten números",
+      "url": "URL inválida",
+      "passwordMatch": "Las contraseñas no coinciden",
+      "invalidDate": "Fecha inválida"
+    }
+  },
+  "accessibility": {
+    "skipLink": "Saltar al contenido principal",
+    "screenReader": {
+      "loading": "Cargando contenido",
+      "menuOpen": "Menú abierto",
+      "menuClose": "Menú cerrado",
+      "modalOpen": "Diálogo abierto",
+      "modalClose": "Diálogo cerrado",
+      "pageStart": "Inicio de la página",
+      "pageEnd": "Fin de la página",
+      "navigationStart": "Inicio de la navegación",
+      "navigationEnd": "Fin de la navegación"
+    },
+    "aria": {
+      "required": "campo obligatorio",
+      "selected": "seleccionado",
+      "expanded": "expandido",
+      "collapsed": "contraído",
+      "hasError": "tiene error",
+      "errorMessage": "mensaje de error",
+      "closeButton": "botón de cerrar",
+      "menuButton": "botón de menú"
+    }
+  },
+  "formats": {
+    "date": {
+      "short": "dd/MM/yyyy",
+      "long": "d 'de' MMMM 'de' yyyy",
+      "time": "HH:mm",
+      "datetime": "d 'de' MMMM 'de' yyyy, HH:mm"
+    },
+    "number": {
+      "decimal": ",",
+      "thousands": ".",
+      "currency": {
+        "symbol": "€",
+        "format": "#,##0.00 ¤"
+      },
+      "percentage": "#,##0%"
+    }
+  }
+}
