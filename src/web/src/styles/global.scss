@@ -1,0 +1,233 @@
+// =============================================================================
+// Global Styles - Task Management System
+// Version: 1.0.0
+// Description: Core application styling implementing Material Design principles,
+// responsive layouts, and accessibility standards
+// =============================================================================
+
+@use 'variables' as vars;
+@use 'mixins' as mix;
+@use 'themes';
+@import 'normalize.css'; // v8.0.1
+
+// Base Reset & Defaults
+// -----------------------------------------------------------------------------
+html {
+  box-sizing: border-box;
+  font-size: vars.$BASE_FONT_SIZE;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-base);
+  line-height: vars.$BASE_LINE_HEIGHT;
+  text-rendering: optimizeLegibility;
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  transition: var(--theme-transition);
+}
+
+// Typography System
+// -----------------------------------------------------------------------------
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  @include mix.typography('h1', 'bold', 'tight');
+}
+
+h1 { font-size: map-get(map-get(vars.$typography, 'font-sizes'), 'h1'); }
+h2 { font-size: map-get(map-get(vars.$typography, 'font-sizes'), 'h2'); }
+h3 { font-size: map-get(map-get(vars.$typography, 'font-sizes'), 'h3'); }
+h4 { font-size: map-get(map-get(vars.$typography, 'font-sizes'), 'h4'); }
+
+p {
+  margin-bottom: map-get(vars.$spacing, 'md');
+  @include mix.typography('base', 'regular', 'base');
+}
+
+// F-Pattern Layout System
+// -----------------------------------------------------------------------------
+.f-pattern {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: map-get(vars.$spacing, 'md');
+  max-width: vars.$MAX_CONTENT_WIDTH;
+  margin: 0 auto;
+  padding: 0 map-get(vars.$spacing, 'md');
+
+  @include mix.respondTo('tablet') {
+    padding: 0 map-get(vars.$spacing, 'lg');
+  }
+
+  @include mix.respondTo('desktop') {
+    padding: 0 map-get(vars.$spacing, 'xl');
+  }
+}
+
+// Golden Ratio Spacing
+// -----------------------------------------------------------------------------
+.golden-ratio {
+  &-spacing {
+    padding: map-get(vars.$spacing, 'md');
+    margin-bottom: calc(#{map-get(vars.$spacing, 'md')} * #{vars.$GOLDEN_RATIO});
+  }
+
+  &-container {
+    width: 100%;
+    max-width: calc(#{vars.$MAX_CONTENT_WIDTH} / #{vars.$GOLDEN_RATIO});
+    margin: 0 auto;
+  }
+}
+
+// Responsive Grid System
+// -----------------------------------------------------------------------------
+.grid {
+  display: grid;
+  gap: map-get(vars.$spacing, 'md');
+
+  @include mix.respondTo('mobile') {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @include mix.respondTo('tablet') {
+    grid-template-columns: repeat(8, 1fr);
+  }
+
+  @include mix.respondTo('desktop') {
+    grid-template-columns: repeat(12, 1fr);
+  }
+}
+
+// Accessibility Utilities
+// -----------------------------------------------------------------------------
+.visually-hidden {
+  @include mix.visuallyHidden;
+}
+
+.skip-link {
+  @include mix.visuallyHidden;
+
+  &:focus {
+    position: fixed;
+    top: map-get(vars.$spacing, 'md');
+    left: map-get(vars.$spacing, 'md');
+    width: auto;
+    height: auto;
+    padding: map-get(vars.$spacing, 'sm');
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    z-index: 9999;
+    @include mix.elevation('high');
+  }
+}
+
+// Focus Management
+[tabindex]:not([tabindex="-1"]) {
+  @include mix.focusRing;
+}
+
+// High Contrast & Reduced Motion
+@media (prefers-contrast: more) {
+  :root {
+    --md-state-hover-opacity: 0.16;
+    --md-state-focus-opacity: 0.24;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Material Design Elevation
+// -----------------------------------------------------------------------------
+.elevation {
+  &-low { @include mix.elevation('low'); }
+  &-medium { @include mix.elevation('medium'); }
+  &-high { @include mix.elevation('high'); }
+}
+
+// Theme System Support
+// -----------------------------------------------------------------------------
+.theme-transition {
+  transition: var(--theme-transition);
+}
+
+// Selection Styling
+::selection {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+// RTL Support
+// -----------------------------------------------------------------------------
+[dir="rtl"] {
+  .f-pattern {
+    @include mix.rtlAware('text-align', left, right);
+  }
+
+  .grid {
+    @include mix.rtlAware('direction', ltr, rtl);
+  }
+}
+
+// Utility Classes
+// -----------------------------------------------------------------------------
+.text {
+  &-truncate { @include mix.truncate(1); }
+  &-truncate-2 { @include mix.truncate(2); }
+  &-truncate-3 { @include mix.truncate(3); }
+}
+
+.flex {
+  &-center { @include mix.flexCenter; }
+  &-column { @include mix.flexCenter(column); }
+}
+
+.container {
+  @include mix.container;
+}
+
+// Animation Utilities
+// -----------------------------------------------------------------------------
+.fade-in {
+  @include mix.fadeIn;
+  animation: fadeIn map-get(map-get(vars.$animation, 'duration'), 'base')
+            map-get(map-get(vars.$animation, 'easing'), 'standard');
+}
+
+.slide-in {
+  &-left { @include mix.slideIn('left'); }
+  &-right { @include mix.slideIn('right'); }
+  &-top { @include mix.slideIn('top'); }
+  &-bottom { @include mix.slideIn('bottom'); }
+}
+
+// Export Global Styles
+// -----------------------------------------------------------------------------
+:export {
+  typography-base: vars.$typography;
+  layout-utilities: vars.$spacing;
+  accessibility-utilities: vars.$MINIMUM_CONTRAST_RATIO;
+  theme-utilities: vars.$animation;
+  elevation-utilities: vars.$elevation;
+  grid-utilities: vars.$GRID_COLUMNS;
+}
