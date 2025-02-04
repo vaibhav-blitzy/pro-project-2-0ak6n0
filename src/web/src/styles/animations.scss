@@ -1,0 +1,180 @@
+// =============================================================================
+// Core Animation System
+// =============================================================================
+// Version: 1.0.0
+// Purpose: Provides performant, accessible animations following Material Design
+// principles with reduced motion support and hardware acceleration
+
+@import './variables';
+
+// Core Animation Function
+// -----------------------------------------------------------------------------
+@function getTransitionDuration($complexity: 'simple', $isReducedMotion: false) {
+  @if $isReducedMotion {
+    @return map-get(map-get($animation, duration), instant);
+  }
+  
+  @if $complexity == 'complex' {
+    @return map-get(map-get($animation, duration), slow);
+  }
+  
+  @return map-get(map-get($animation, duration), base);
+}
+
+// Core Animation Mixins
+// -----------------------------------------------------------------------------
+@mixin hardware-accelerated {
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@mixin transitionMixin(
+  $properties: transform,
+  $duration: map-get(map-get($animation, duration), base),
+  $easing: map-get(map-get($animation, easing), standard)
+) {
+  transition-property: $properties;
+  transition-duration: $duration;
+  transition-timing-function: $easing;
+  will-change: $properties;
+  
+  @include reduced-motion;
+}
+
+// Keyframe Animations
+// -----------------------------------------------------------------------------
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    @include hardware-accelerated;
+  }
+  to {
+    transform: translateX(0);
+    @include hardware-accelerated;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    @include hardware-accelerated;
+  }
+  to {
+    transform: translateX(100%);
+    @include hardware-accelerated;
+  }
+}
+
+// Animation Classes
+// -----------------------------------------------------------------------------
+.animate-fade-in {
+  animation: fadeIn getTransitionDuration('simple') map-get(map-get($animation, easing), standard);
+  will-change: opacity;
+  @include reduced-motion;
+}
+
+.animate-fade-out {
+  animation: fadeOut getTransitionDuration('simple') map-get(map-get($animation, easing), standard);
+  will-change: opacity;
+  @include reduced-motion;
+}
+
+.animate-slide-in {
+  animation: slideIn getTransitionDuration('complex') map-get(map-get($animation, easing), decelerate);
+  @include hardware-accelerated;
+  @include reduced-motion;
+}
+
+.animate-slide-out {
+  animation: slideOut getTransitionDuration('complex') map-get(map-get($animation, easing), accelerate);
+  @include hardware-accelerated;
+  @include reduced-motion;
+}
+
+// Loading States
+// -----------------------------------------------------------------------------
+.loading-spinner {
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  animation: rotate getTransitionDuration('complex') map-get(map-get($animation, easing), standard) infinite;
+  @include hardware-accelerated;
+  
+  &[aria-busy="true"] {
+    display: inline-block;
+  }
+  
+  @include reduced-motion {
+    animation-duration: getTransitionDuration('simple');
+  }
+}
+
+// Responsive Animations
+// -----------------------------------------------------------------------------
+@each $breakpoint, $value in $breakpoints {
+  @media (min-width: $value) {
+    .animate-fade-in-#{$breakpoint} {
+      animation: fadeIn getTransitionDuration('simple') map-get(map-get($animation, easing), standard);
+      will-change: opacity;
+      @include reduced-motion;
+    }
+    
+    .animate-slide-in-#{$breakpoint} {
+      animation: slideIn getTransitionDuration('complex') map-get(map-get($animation, easing), decelerate);
+      @include hardware-accelerated;
+      @include reduced-motion;
+    }
+  }
+}
+
+// Performance Optimizations
+// -----------------------------------------------------------------------------
+* {
+  @media (prefers-reduced-motion: no-preference) {
+    &[class*="animate-"] {
+      @include hardware-accelerated;
+    }
+  }
+}
+
+// Exports
+// -----------------------------------------------------------------------------
+:export {
+  fadeIn: fadeIn;
+  fadeOut: fadeOut;
+  slideIn: slideIn;
+  slideOut: slideOut;
+  transitionMixin: transitionMixin;
+}
