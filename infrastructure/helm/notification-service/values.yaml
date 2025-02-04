@@ -1,0 +1,221 @@
+# Default values for notification-service Helm chart
+# Production-ready configuration with high availability, security, and monitoring
+
+# Replica count for high availability
+replicaCount: 3
+revisionHistoryLimit: 10
+
+# Image configuration
+image:
+  repository: notification-service
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+# Pod Security Context
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+# Container Security Context
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# Service configuration
+service:
+  type: ClusterIP
+  ports:
+    http:
+      port: 3000
+      targetPort: http
+      protocol: TCP
+    websocket:
+      port: 3001
+      targetPort: websocket
+      protocol: TCP
+
+# Resource limits and requests
+resources:
+  limits:
+    cpu: "1"
+    memory: "1Gi"
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+
+# Horizontal Pod Autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Pod Anti-affinity for high availability
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: notification-service
+        topologyKey: kubernetes.io/hostname
+
+# Node selection and tolerations
+nodeSelector: {}
+tolerations: []
+
+# Monitoring and observability configuration
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: "15s"
+    scrapeTimeout: "10s"
+    endpoints:
+      - port: http
+        path: /metrics
+        interval: "15s"
+  prometheusRules:
+    enabled: true
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+      - alert: HighLatency
+        expr: http_request_duration_seconds{quantile="0.9"} > 1
+        for: 5m
+        labels:
+          severity: warning
+      - alert: PodRestarting
+        expr: rate(kube_pod_container_status_restarts_total{container="notification-service"}[15m]) > 0
+        for: 15m
+        labels:
+          severity: warning
+
+# Health check configuration
+livenessProbe:
+  httpGet:
+    path: /health/live
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health/ready
+    port: http
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# RabbitMQ configuration
+rabbitmq:
+  host: rabbitmq-service
+  port: 5672
+  ssl:
+    enabled: true
+    verify: true
+    certFile: /certs/tls.crt
+    keyFile: /certs/tls.key
+    caFile: /certs/ca.crt
+  queues:
+    deadLetterExchange: notification.dlx
+    retryPolicy:
+      enabled: true
+      maxRetries: 3
+      initialInterval: 1000
+      multiplier: 2
+
+# Redis configuration for caching
+redis:
+  enabled: true
+  host: redis-service
+  port: 6379
+  ssl: true
+  sentinel:
+    enabled: true
+    masterSet: notification-master
+  password:
+    enabled: true
+    existingSecret: notification-redis-secret
+    key: redis-password
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  hosts: []
+  tls: []
+
+# Pod annotations
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "3000"
+  prometheus.io/path: "/metrics"
+
+# Additional environment variables
+env:
+  - name: NODE_ENV
+    value: "production"
+  - name: LOG_LEVEL
+    value: "info"
+  - name: API_RATE_LIMIT
+    value: "1000"
+  - name: API_RATE_WINDOW
+    value: "1h"
+
+# Volume configuration
+volumes:
+  - name: tmp
+    emptyDir: {}
+  - name: config
+    configMap:
+      name: notification-config
+  - name: certs
+    secret:
+      secretName: notification-tls
+
+volumeMounts:
+  - name: tmp
+    mountPath: /tmp
+  - name: config
+    mountPath: /app/config
+    readOnly: true
+  - name: certs
+    mountPath: /certs
+    readOnly: true
