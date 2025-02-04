@@ -1,0 +1,124 @@
+{
+  "projects": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Marketing Campaign",
+      "description": "Q4 Marketing Campaign Planning and Execution",
+      "ownerId": "123e4567-e89b-12d3-a456-426614174000",
+      "status": "ACTIVE",
+      "startDate": "2023-10-01T00:00:00.000Z",
+      "endDate": "2023-12-31T23:59:59.999Z",
+      "metadata": {
+        "priority": "HIGH",
+        "department": "Marketing",
+        "budget": 50000,
+        "teamSize": 5,
+        "milestones": ["Planning", "Execution", "Review"],
+        "tags": ["marketing", "q4-2023", "campaign"]
+      },
+      "createdAt": "2023-09-15T00:00:00.000Z",
+      "updatedAt": "2023-09-15T00:00:00.000Z",
+      "createdBy": "123e4567-e89b-12d3-a456-426614174000",
+      "updatedBy": "123e4567-e89b-12d3-a456-426614174000",
+      "version": 1,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "name": "Product Launch",
+      "description": "New Product Development and Launch Strategy",
+      "ownerId": "123e4567-e89b-12d3-a456-426614174001",
+      "status": "DRAFT",
+      "startDate": "2024-01-01T00:00:00.000Z",
+      "endDate": "2024-06-30T23:59:59.999Z",
+      "metadata": {
+        "priority": "HIGH",
+        "department": "Product",
+        "budget": 100000,
+        "teamSize": 8,
+        "milestones": ["Research", "Development", "Testing", "Launch"],
+        "tags": ["product", "launch", "2024-q1"]
+      },
+      "createdAt": "2023-09-20T00:00:00.000Z",
+      "updatedAt": "2023-09-20T00:00:00.000Z",
+      "createdBy": "123e4567-e89b-12d3-a456-426614174001",
+      "updatedBy": "123e4567-e89b-12d3-a456-426614174001",
+      "version": 1,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "name": "Team Training Program",
+      "description": "Comprehensive Employee Training Initiative",
+      "ownerId": "123e4567-e89b-12d3-a456-426614174002",
+      "status": "ON_HOLD",
+      "startDate": "2023-11-01T00:00:00.000Z",
+      "endDate": "2024-02-28T23:59:59.999Z",
+      "metadata": {
+        "priority": "MEDIUM",
+        "department": "HR",
+        "budget": 25000,
+        "teamSize": 3,
+        "milestones": ["Planning", "Content Creation", "Delivery"],
+        "tags": ["training", "hr", "development"]
+      },
+      "createdAt": "2023-09-25T00:00:00.000Z",
+      "updatedAt": "2023-10-15T00:00:00.000Z",
+      "createdBy": "123e4567-e89b-12d3-a456-426614174002",
+      "updatedBy": "123e4567-e89b-12d3-a456-426614174002",
+      "version": 2,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "name": "Legacy System Migration",
+      "description": "Migration of Legacy Systems to Cloud Infrastructure",
+      "ownerId": "123e4567-e89b-12d3-a456-426614174003",
+      "status": "COMPLETED",
+      "startDate": "2023-06-01T00:00:00.000Z",
+      "endDate": "2023-09-30T23:59:59.999Z",
+      "metadata": {
+        "priority": "HIGH",
+        "department": "IT",
+        "budget": 150000,
+        "teamSize": 10,
+        "milestones": ["Analysis", "Planning", "Migration", "Testing", "Deployment"],
+        "tags": ["migration", "cloud", "infrastructure"]
+      },
+      "createdAt": "2023-05-15T00:00:00.000Z",
+      "updatedAt": "2023-09-30T23:59:59.999Z",
+      "createdBy": "123e4567-e89b-12d3-a456-426614174003",
+      "updatedBy": "123e4567-e89b-12d3-a456-426614174003",
+      "version": 5,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440004",
+      "name": "Website Redesign",
+      "description": "Corporate Website Redesign Project",
+      "ownerId": "123e4567-e89b-12d3-a456-426614174004",
+      "status": "ARCHIVED",
+      "startDate": "2023-01-01T00:00:00.000Z",
+      "endDate": "2023-05-31T23:59:59.999Z",
+      "metadata": {
+        "priority": "HIGH",
+        "department": "Marketing",
+        "budget": 75000,
+        "teamSize": 6,
+        "milestones": ["Design", "Development", "Content", "Launch"],
+        "tags": ["website", "design", "branding"]
+      },
+      "createdAt": "2022-12-15T00:00:00.000Z",
+      "updatedAt": "2023-06-01T00:00:00.000Z",
+      "createdBy": "123e4567-e89b-12d3-a456-426614174004",
+      "updatedBy": "123e4567-e89b-12d3-a456-426614174004",
+      "version": 8,
+      "deletedAt": "2023-06-01T00:00:00.000Z",
+      "deletedBy": "123e4567-e89b-12d3-a456-426614174004"
+    }
+  ]
+}
