@@ -1,0 +1,66 @@
+{
+  "extends": "../backend/tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "lib": ["ES2022", "DOM"],
+    
+    // Type Definitions for Testing Frameworks
+    "types": ["jest", "cypress", "node"],
+    
+    // Source Maps for Enhanced Debugging
+    "sourceMap": true,
+    
+    // Output Configuration for Test Files
+    "outDir": "./dist/test",
+    "rootDir": "./",
+    
+    // Strict Type Checking
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    
+    // Additional Checks
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    
+    // Module Resolution
+    "moduleResolution": "node",
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"],
+      "@test/*": ["src/test/*"]
+    },
+    
+    // Interop and Decorator Support
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    
+    // Build Optimizations
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.cy.ts",
+    "**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "cypress/screenshots",
+    "cypress/videos"
+  ]
+}
