@@ -1,0 +1,36 @@
+apiVersion: v2
+type: application
+name: api-gateway
+version: 1.0.0
+description: API Gateway powered by Kong for Task Management System with enterprise-grade security and monitoring
+appVersion: 1.0.0
+kubeVersion: ">=1.21.0"
+
+# Dependencies
+dependencies:
+  - name: kong
+    version: "3.4"
+    repository: "https://charts.konghq.com"
+    condition: kong.enabled
+
+# Maintainers
+maintainers:
+  - name: Task Management System Team
+    email: team@taskmanager.com
+
+# Keywords for chart discovery
+keywords:
+  - api-gateway
+  - kong
+  - microservices
+  - task-management
+  - security
+  - monitoring
+
+# Additional metadata annotations
+annotations:
+  artifacthub.io/changes: "Initial release of API Gateway chart with enterprise security features"
+  artifacthub.io/containsSecurityUpdates: "true"
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/license: "Apache-2.0"
+  artifacthub.io/maintainers: '[{"name":"Task Management System Team","email":"team@taskmanager.com"}]'
