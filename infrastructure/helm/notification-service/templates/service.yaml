@@ -1,0 +1,25 @@
+# Helm Chart Version: 3.0.0
+# Service template for notification-service exposing HTTP API and WebSocket endpoints
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "notification-service.fullname" . }}
+  labels:
+    {{- include "notification-service.labels" . | nindent 4 }}
+spec:
+  # Using ClusterIP for secure internal communication within the cluster
+  type: ClusterIP
+  ports:
+    # HTTP API endpoint
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+    # WebSocket endpoint for real-time updates
+    - name: websocket
+      port: 3001
+      targetPort: 3001
+      protocol: TCP
+  # Pod selector using common labels
+  selector:
+    {{- include "notification-service.selectorLabels" . | nindent 4 }}
