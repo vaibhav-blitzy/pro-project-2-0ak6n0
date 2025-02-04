@@ -1,0 +1,155 @@
+# Prometheus Configuration for Task Management System
+# Version: 2.45.0
+# Description: Enterprise-grade monitoring configuration with enhanced security and performance monitoring
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    environment: production
+    region: global
+
+# Rule files for alerts and recording rules
+rule_files:
+  - "rules/alerts.yml"
+  - "rules/recording.yml"
+
+# Alertmanager configuration with secure TLS
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+      scheme: https
+      timeout: 10s
+      api_version: v2
+      tls_config:
+        cert_file: /etc/prometheus/certs/alertmanager-client.pem
+        key_file: /etc/prometheus/certs/alertmanager-client-key.pem
+        ca_file: /etc/prometheus/certs/alertmanager-ca.pem
+
+# Scrape configurations for all system components
+scrape_configs:
+  # API Gateway metrics
+  - job_name: api-gateway
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scheme: https
+    tls_config:
+      cert_file: /etc/prometheus/certs/client.pem
+      key_file: /etc/prometheus/certs/client-key.pem
+      ca_file: /etc/prometheus/certs/ca.pem
+    static_configs:
+      - targets: ['api-gateway:9090']
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        target_label: application
+
+  # Task Service metrics
+  - job_name: task-service
+    metrics_path: /actuator/prometheus
+    scrape_interval: 10s
+    scheme: https
+    tls_config:
+      cert_file: /etc/prometheus/certs/client.pem
+      key_file: /etc/prometheus/certs/client-key.pem
+      ca_file: /etc/prometheus/certs/ca.pem
+    static_configs:
+      - targets: ['task-service:8080']
+
+  # Project Service metrics
+  - job_name: project-service
+    metrics_path: /actuator/prometheus
+    scrape_interval: 10s
+    scheme: https
+    tls_config:
+      cert_file: /etc/prometheus/certs/client.pem
+      key_file: /etc/prometheus/certs/client-key.pem
+      ca_file: /etc/prometheus/certs/ca.pem
+    static_configs:
+      - targets: ['project-service:8080']
+
+  # Auth Service metrics
+  - job_name: auth-service
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scheme: https
+    tls_config:
+      cert_file: /etc/prometheus/certs/client.pem
+      key_file: /etc/prometheus/certs/client-key.pem
+      ca_file: /etc/prometheus/certs/ca.pem
+    static_configs:
+      - targets: ['auth-service:3000']
+
+  # Database metrics
+  - job_name: postgresql
+    metrics_path: /metrics
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['postgresql-exporter:9187']
+
+  # Redis metrics
+  - job_name: redis
+    metrics_path: /metrics
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+  # Node metrics
+  - job_name: node
+    metrics_path: /metrics
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+# Storage configuration for long-term metrics retention
+storage:
+  tsdb:
+    retention_time: 30d
+    retention_size: 50GB
+    wal_compression: true
+    min_block_duration: 2h
+    max_block_duration: 24h
+    no_lockfile: false
+
+# Security and remote write configurations
+remote_write:
+  - url: "http://remote-storage:9201/write"
+    remote_timeout: 30s
+    queue_config:
+      capacity: 10000
+      max_shards: 200
+      max_samples_per_send: 500
+      batch_send_deadline: 5s
+    write_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'go_.*'
+        action: drop
+
+# Web interface configuration
+web:
+  listen_address: "0.0.0.0:9090"
+  external_url: "https://prometheus.taskmanager.com"
+  max_connections: 512
+  read_timeout: 30s
+  max_samples: 50000000
+  page_title: "Task Management System Monitoring"
+  cors:
+    cors_origins: ['*.taskmanager.com']
+    cors_methods: ['GET', 'POST', 'OPTIONS']
+  tls_config:
+    cert_file: /etc/prometheus/certs/server.pem
+    key_file: /etc/prometheus/certs/server-key.pem
+    client_auth_type: RequireAndVerifyClientCert
+    client_ca_file: /etc/prometheus/certs/ca.pem
+
+# Query performance and limits
+query:
+  max_samples: 50000000
+  timeout: 2m
+  max_concurrency: 20
+  lookback_delta: 5m
+
+# Lifecycle management
+lifecycle:
+  clock_skew_tolerance: 100ms
