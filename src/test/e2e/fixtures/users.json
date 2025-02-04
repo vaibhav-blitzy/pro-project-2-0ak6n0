@@ -1,0 +1,184 @@
+{
+  "users": [
+    {
+      "id": "test-admin-id",
+      "email": "admin@taskmanager.com",
+      "password": "test_hashed_password_1",
+      "firstName": "Admin",
+      "lastName": "User",
+      "role": "ADMIN",
+      "mfaEnabled": false,
+      "mfaSecret": "encrypted_mfa_secret_1",
+      "lastLogin": "2024-01-01T00:00:00.000Z",
+      "passwordLastChanged": "2024-01-01T00:00:00.000Z",
+      "passwordHistory": ["test_hashed_password_0"],
+      "failedLoginAttempts": 0,
+      "accountLocked": false,
+      "securityQuestions": [
+        {
+          "question": "What is your first pet's name?",
+          "answer": "test_hashed_answer_1",
+          "lastUpdated": "2024-01-01T00:00:00.000Z"
+        }
+      ],
+      "sessionTimeout": 3600,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "createdBy": "system",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "updatedBy": "system",
+      "version": 1,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-manager-id",
+      "email": "manager@taskmanager.com",
+      "password": "test_hashed_password_2",
+      "firstName": "Manager",
+      "lastName": "User",
+      "role": "MANAGER",
+      "mfaEnabled": false,
+      "mfaSecret": "encrypted_mfa_secret_2",
+      "lastLogin": "2024-01-01T00:00:00.000Z",
+      "passwordLastChanged": "2024-01-01T00:00:00.000Z",
+      "passwordHistory": ["test_hashed_password_1"],
+      "failedLoginAttempts": 0,
+      "accountLocked": false,
+      "securityQuestions": [
+        {
+          "question": "What is your mother's maiden name?",
+          "answer": "test_hashed_answer_2",
+          "lastUpdated": "2024-01-01T00:00:00.000Z"
+        }
+      ],
+      "sessionTimeout": 3600,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "createdBy": "system",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "updatedBy": "system",
+      "version": 1,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-member-id",
+      "email": "member@taskmanager.com",
+      "password": "test_hashed_password_3",
+      "firstName": "Member",
+      "lastName": "User",
+      "role": "MEMBER",
+      "mfaEnabled": false,
+      "mfaSecret": "encrypted_mfa_secret_3",
+      "lastLogin": "2024-01-01T00:00:00.000Z",
+      "passwordLastChanged": "2024-01-01T00:00:00.000Z",
+      "passwordHistory": ["test_hashed_password_2"],
+      "failedLoginAttempts": 0,
+      "accountLocked": false,
+      "securityQuestions": [
+        {
+          "question": "What was your first car?",
+          "answer": "test_hashed_answer_3",
+          "lastUpdated": "2024-01-01T00:00:00.000Z"
+        }
+      ],
+      "sessionTimeout": 3600,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "createdBy": "system",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "updatedBy": "system",
+      "version": 1,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-mfa-id",
+      "email": "mfa@taskmanager.com",
+      "password": "test_hashed_password_4",
+      "firstName": "MFA",
+      "lastName": "User",
+      "role": "MEMBER",
+      "mfaEnabled": true,
+      "mfaSecret": "encrypted_mfa_secret_4",
+      "lastLogin": "2024-01-01T00:00:00.000Z",
+      "passwordLastChanged": "2024-01-01T00:00:00.000Z",
+      "passwordHistory": ["test_hashed_password_3"],
+      "failedLoginAttempts": 0,
+      "accountLocked": false,
+      "securityQuestions": [
+        {
+          "question": "What is your favorite book?",
+          "answer": "test_hashed_answer_4",
+          "lastUpdated": "2024-01-01T00:00:00.000Z"
+        }
+      ],
+      "sessionTimeout": 1800,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "createdBy": "system",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "updatedBy": "system",
+      "version": 1,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-locked-id",
+      "email": "locked@taskmanager.com",
+      "password": "test_hashed_password_5",
+      "firstName": "Locked",
+      "lastName": "User",
+      "role": "MEMBER",
+      "mfaEnabled": false,
+      "mfaSecret": "encrypted_mfa_secret_5",
+      "lastLogin": "2024-01-01T00:00:00.000Z",
+      "passwordLastChanged": "2024-01-01T00:00:00.000Z",
+      "passwordHistory": ["test_hashed_password_4"],
+      "failedLoginAttempts": 5,
+      "accountLocked": true,
+      "securityQuestions": [
+        {
+          "question": "What is your favorite movie?",
+          "answer": "test_hashed_answer_5",
+          "lastUpdated": "2024-01-01T00:00:00.000Z"
+        }
+      ],
+      "sessionTimeout": 3600,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "createdBy": "system",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "updatedBy": "system",
+      "version": 1,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-deleted-id",
+      "email": "deleted@taskmanager.com",
+      "password": "test_hashed_password_6",
+      "firstName": "Deleted",
+      "lastName": "User",
+      "role": "MEMBER",
+      "mfaEnabled": false,
+      "mfaSecret": "encrypted_mfa_secret_6",
+      "lastLogin": "2024-01-01T00:00:00.000Z",
+      "passwordLastChanged": "2024-01-01T00:00:00.000Z",
+      "passwordHistory": ["test_hashed_password_5"],
+      "failedLoginAttempts": 0,
+      "accountLocked": false,
+      "securityQuestions": [
+        {
+          "question": "What is your favorite color?",
+          "answer": "test_hashed_answer_6",
+          "lastUpdated": "2024-01-01T00:00:00.000Z"
+        }
+      ],
+      "sessionTimeout": 3600,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "createdBy": "system",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "updatedBy": "system",
+      "version": 1,
+      "deletedAt": "2024-01-02T00:00:00.000Z",
+      "deletedBy": "system"
+    }
+  ]
+}
