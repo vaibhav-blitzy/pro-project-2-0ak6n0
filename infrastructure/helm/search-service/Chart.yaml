@@ -1,0 +1,26 @@
+apiVersion: v2
+name: search-service
+description: Helm chart for Task Management System search service powered by Elasticsearch, providing full-text search capabilities with high availability and monitoring integration
+type: application
+version: 1.0.0
+appVersion: 1.0.0
+
+keywords:
+  - search
+  - elasticsearch
+  - task-management
+  - full-text-search
+  - monitoring
+
+maintainers:
+  - name: Task Management System Team
+    email: team@taskmanagement.com
+
+dependencies:
+  - name: elasticsearch
+    version: 8.0.0
+    repository: https://helm.elastic.co
+    condition: elasticsearch.enabled
+    tags:
+      - search
+      - database
