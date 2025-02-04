@@ -1,0 +1,79 @@
+# Task Management System CODEOWNERS file
+# Defines code ownership and required review patterns with enhanced security controls
+# Version: 1.0.0
+
+# Default owners for everything in the repo
+# Requires at least 2 reviewers for any changes
+* @task-manager/backend-team @task-manager/frontend-team
+
+# Backend service implementations
+/src/backend/ @task-manager/backend-team
+/src/backend/shared/ @task-manager/backend-team
+
+# Authentication service requires both backend and security team review
+/src/backend/auth-service/ @task-manager/backend-team @task-manager/security-team
+
+# Frontend React application
+/src/web/ @task-manager/frontend-team
+/src/web/src/components/ @task-manager/frontend-team
+
+# Infrastructure and deployment configurations
+/infrastructure/ @task-manager/devops-team
+/infrastructure/security/ @task-manager/devops-team @task-manager/security-team
+/src/backend/k8s/ @task-manager/devops-team
+
+# Security-related configurations and tests
+/src/test/security/ @task-manager/security-team
+/infrastructure/security/waf/ @task-manager/security-team
+/infrastructure/security/network-policies/ @task-manager/security-team
+
+# CI/CD workflow configurations
+/.github/workflows/ @task-manager/devops-team
+
+# Container configurations
+**/Dockerfile @task-manager/devops-team
+
+# Database migrations and schemas
+/src/backend/**/db/migration/ @task-manager/backend-team
+/src/backend/**/resources/db/ @task-manager/backend-team
+
+# API Gateway configurations
+/src/backend/api-gateway/ @task-manager/backend-team @task-manager/security-team
+
+# Configuration files
+*.yml @task-manager/devops-team
+*.yaml @task-manager/devops-team
+*.config.* @task-manager/devops-team
+
+# Security configuration files
+**/security.* @task-manager/security-team
+**/auth.* @task-manager/security-team
+**/jwt.* @task-manager/security-team
+
+# Documentation
+/docs/ @task-manager/backend-team @task-manager/frontend-team
+*.md @task-manager/backend-team @task-manager/frontend-team
+
+# Package dependencies
+package.json @task-manager/devops-team
+package-lock.json @task-manager/devops-team
+pom.xml @task-manager/devops-team
+
+# Environment configurations
+.env* @task-manager/devops-team @task-manager/security-team
+**/application.yml @task-manager/devops-team @task-manager/security-team
+**/application.properties @task-manager/devops-team @task-manager/security-team
+
+# Test configurations and implementations
+/src/test/ @task-manager/backend-team @task-manager/frontend-team
+**/*.test.* @task-manager/backend-team @task-manager/frontend-team
+**/*.spec.* @task-manager/backend-team @task-manager/frontend-team
+
+# Build and deployment scripts
+/scripts/ @task-manager/devops-team
+*.sh @task-manager/devops-team
+*.bash @task-manager/devops-team
+
+# Secrets and sensitive configurations
+**/secrets.* @task-manager/security-team
+**/credentials.* @task-manager/security-team
