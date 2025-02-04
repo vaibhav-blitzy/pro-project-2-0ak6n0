@@ -1,0 +1,195 @@
+# Authentication Service Helm Chart Values
+# Version: 1.0.0
+# Implements enterprise-grade security, scaling, and monitoring configurations
+
+# Replica count for high availability (min 3, max 5)
+replicaCount: 3
+
+# Container image configuration
+image:
+  repository: task-management/auth-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 3001
+  targetPort: 3001
+
+# Pod security context configuration
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+# Container security context
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  allowPrivilegeEscalation: false
+
+# Resource limits and requests
+resources:
+  limits:
+    cpu: "1"
+    memory: "2Gi"
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+
+# Horizontal Pod Autoscaling configuration
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Authentication service configuration
+config:
+  # Session configuration
+  session:
+    maxAge: "24h"
+    secure: true
+    httpOnly: true
+    sameSite: "strict"
+    cookiePrefix: "__Secure-"
+    refreshTokenExpiry: "30d"
+
+  # Password policy configuration
+  password:
+    minLength: 12
+    maxAttempts: 5
+    lockoutDuration: "15m"
+    requireUppercase: true
+    requireLowercase: true
+    requireNumbers: true
+    requireSpecialChars: true
+    historySize: 5
+    expiryDays: 90
+
+  # OAuth configuration
+  oauth:
+    sessionMaxAge: "24h"
+    providers:
+      okta:
+        enabled: true
+        scope:
+          - "openid"
+          - "profile"
+          - "email"
+        responseType: "code"
+        pkce: true
+
+  # MFA configuration
+  mfa:
+    enabled: true
+    issuer: "Task Management System"
+    algorithm: "sha1"
+    digits: 6
+    step: 30
+    backupCodesCount: 10
+
+  # JWT configuration
+  jwt:
+    algorithm: "RS256"
+    accessTokenExpiry: "15m"
+    refreshTokenExpiry: "7d"
+    issuer: "task-management-system"
+    audience: "task-management-api"
+    keyRotationInterval: "30d"
+
+# Health check probes
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 3001
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 3001
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+# Pod disruption budget
+podDisruptionBudget:
+  minAvailable: 2
+
+# Node affinity and anti-affinity rules
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - auth-service
+          topologyKey: kubernetes.io/hostname
+
+# Tolerations for node scheduling
+tolerations: []
+
+# Pod annotations for monitoring
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "3001"
+  prometheus.io/path: "/metrics"
+
+# Environment variables
+env:
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+
+# Volume mounts for secrets and configurations
+volumes:
+  - name: jwt-keys
+    secret:
+      secretName: auth-service-jwt-keys
+  - name: config
+    configMap:
+      name: auth-service-config
+
+volumeMounts:
+  - name: jwt-keys
+    mountPath: /app/keys
+    readOnly: true
+  - name: config
+    mountPath: /app/config
+    readOnly: true
+
+# Network policy
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: api-gateway
+        - podSelector:
+            matchLabels:
+              app: task-service
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+        - podSelector:
+            matchLabels:
+              app: postgresql
