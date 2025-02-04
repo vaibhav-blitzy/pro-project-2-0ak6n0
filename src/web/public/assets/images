@@ -1,0 +1,133 @@
+├── avatars/
+│   ├── default-avatar.webp
+│   ├── default-avatar.png
+│   ├── default-avatar@1.5x.png
+│   ├── default-avatar@2x.png
+│   └── .gitkeep
+├── projects/
+│   ├── default-cover.webp
+│   ├── default-cover.png
+│   ├── default-cover@1.5x.png
+│   ├── default-cover@2x.png
+│   └── .gitkeep
+├── ui/
+│   ├── icons/
+│   │   ├── add-task.svg
+│   │   ├── dashboard.svg
+│   │   ├── projects.svg
+│   │   ├── settings.svg
+│   │   └── notifications.svg
+│   ├── illustrations/
+│   │   ├── empty-state.svg
+│   │   ├── welcome.svg
+│   │   └── no-results.svg
+│   └── decorative/
+│       ├── pattern-light.svg
+│       └── pattern-dark.svg
+├── .gitignore
+└── README.md
+```
+
+Let me also provide the content of the README.md file that should be included in this directory to document the image specifications and guidelines:
+
+# src/web/public/assets/images/README.md
+```markdown
+# Task Management System - Image Assets
+
+This directory contains optimized production-ready images for the Task Management System following Material Design 3.0 guidelines.
+
+## Directory Structure
+
+### /avatars
+- User profile images and default avatars
+- Format: WebP (primary), PNG (fallback)
+- Dimensions: 256x256px (1:1)
+- Max size: 200KB
+- Variants: 1x, 1.5x, 2x
+
+### /projects
+- Project thumbnails and cover images
+- Format: WebP (primary), PNG (fallback)
+- Dimensions: 1200x630px (16:9)
+- Max size: 500KB
+- Variants: 1x, 1.5x, 2x
+
+### /ui
+- UI elements, illustrations, and decorative images
+- Format: SVG (primary), PNG (fallback)
+- Max size: 100KB
+- Responsive dimensions
+
+## Image Specifications
+
+### Formats
+- Raster: JPG, PNG, WebP
+- Vector: SVG
+
+### Optimization Settings
+- JPG: 85% quality
+- PNG: Lossless compression
+- WebP: 80% quality
+- Responsive variants: 1x (mobile), 1.5x (tablet), 2x (desktop)
+
+### Required Metadata
+- Alt text
+- Dimensions
+- File size
+- Format
+- Last modified date
+
+## Browser Support
+- Chrome (last 2 versions)
+- Firefox (last 2 versions)
+- Safari (last 2 versions)
+- Edge (last 2 versions)
+
+### Format Fallbacks
+- WebP → PNG
+- SVG → PNG
+
+## Caching Strategy
+- Cache-Control: public, max-age=31536000, immutable
+- ETag enabled
+- Content hash versioning in filenames
+
+## CDN Configuration
+- Edge caching enabled
+- Brotli/Gzip compression
+- Automatic WebP conversion
+
+## Security
+- Content-Security-Policy: img-src 'self' data: https:
+- Public read-only access
+- Hotlink protection enabled
+
+## Contributing Guidelines
+1. Follow naming convention: `{component}-{descriptor}@{scale}.{format}`
+2. Optimize all images before committing
+3. Provide fallback formats for broad browser support
+4. Include required metadata
+5. Verify dimensions and file size limits
+```
+
+# src/web/public/assets/images/.gitignore
+```
+# Ignore development/source image files
+*.psd
+*.ai
+*.sketch
+*.fig
+
+# Ignore temporary files
+.DS_Store
+Thumbs.db
+
+# Ignore generated images
+*@*.jpg
+*@*.png
+*@*.webp
+
+# Allow versioned images
+!*@1x.*
+!*@1.5x.*
+!*@2x.*
