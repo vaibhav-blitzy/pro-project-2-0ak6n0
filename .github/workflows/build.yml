@@ -1,0 +1,157 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'pom.xml'
+      - 'tsconfig.json'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'pom.xml'
+      - 'tsconfig.json'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '18.x'
+  JAVA_VERSION: '17'
+  NODE_ENV: production
+  CI: true
+  TEST_COVERAGE_THRESHOLD: 80
+  PERFORMANCE_SCORE_THRESHOLD: 90
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.m2/repository
+            node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json', '**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          cd src/web && npm ci
+          cd ../backend && npm ci
+
+      - name: Run SAST Security Scan
+        uses: snyk/actions/node@v3
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      - name: Scan Dependencies
+        run: |
+          npm audit
+          cd src/web && npm audit
+          cd ../backend && npm audit
+          mvn dependency-check:check
+
+      - name: Build Backend Services
+        run: |
+          cd src/backend
+          npm run build
+          cd task-service
+          mvn clean verify -Pprod -Dmaven.test.skip=false
+
+      - name: Build Frontend
+        run: |
+          cd src/web
+          npm run build
+          npm run test:coverage
+
+      - name: Run Tests
+        run: |
+          cd src/backend
+          npm run test
+          cd ../web
+          npm run test
+
+      - name: Validate Test Coverage
+        run: |
+          cd src/backend
+          npm run test:coverage -- --coverageThreshold.global.lines=$TEST_COVERAGE_THRESHOLD
+          cd ../web
+          npm run test:coverage -- --coverageThreshold.global.lines=$TEST_COVERAGE_THRESHOLD
+
+      - name: Code Quality Analysis
+        uses: sonarcloud/sonarcloud-github-action@v1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=task-management-system
+            -Dsonar.projectKey=task-management-system
+            -Dsonar.sources=src
+            -Dsonar.tests=src
+            -Dsonar.test.inclusions=**/*.spec.ts,**/*.test.ts,**/*.spec.tsx,**/*.test.tsx
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.java.coveragePlugin=jacoco
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+
+      - name: Performance Tests
+        run: |
+          cd src/web
+          npm run build
+          npx lighthouse-ci --performance=$PERFORMANCE_SCORE_THRESHOLD
+
+      - name: Generate Reports
+        run: |
+          mkdir -p reports
+          cp -r src/backend/coverage reports/backend-coverage
+          cp -r src/web/coverage reports/frontend-coverage
+          cp -r src/backend/task-service/target/site/jacoco reports/java-coverage
+
+      - name: Sign Artifacts
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import
+          find dist -type f -exec gpg --detach-sign {} \;
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            src/backend/dist
+            src/web/dist
+            src/backend/task-service/target/*.jar
+            reports
+            dist/**/*.sig
